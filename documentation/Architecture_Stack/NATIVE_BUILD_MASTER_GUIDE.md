@@ -136,4 +136,20 @@ After building, verify native features:
 - **JS Changes**: Hot reload works instantly (same as Expo Go).
 - **Native Changes**: (e.g. adding new libraries via `npm install`). Requires Re-build (⌘+R).
 
+---
+
+## 8. Authentication Configuration (Keycloak)
+
+To ensure the native build works with Keycloak:
+
+**Realm**: `agristack`  
+**Client ID**: `agristack-mobile`  
+**Redirect URIs** (Must be in Keycloak):
+- `agristack://oauthredirect` (Native)
+- `exp://192.168.1.11:8081` (Expo Go)
+- `exp://localhost:8081`
+
+**Mocking Auth for Testing**:
+If you need to bypass OAuth (e.g., if Keycloak is down), set `MOCK_AUTH = true` in `src/screens/LoginScreen.tsx`.
+
 **You are now running a production-grade native environment!** 🚀
