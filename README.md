@@ -131,6 +131,70 @@ Access at `http://localhost:5173`.
 
 ---
 
+## 🛠️ Advanced Development Workflow
+
+### Backend Development
+1.  **Rebuild container**: `docker-compose up -d --build backend`
+2.  **Run Tests**: `docker-compose exec backend pytest`
+
+### Database Management
+-   **View Tables**: `docker-compose exec db psql -U postgres -d land_records -c "\dt"`
+-   **Run Migrations**: `docker-compose exec -e PYTHONPATH=. backend alembic upgrade head`
+-   **Create Migration**: `docker-compose exec -e PYTHONPATH=. backend alembic revision --autogenerate -m "Description"`
+
+### Quality Assurance (Pre-commit)
+We use pre-commit hooks to enforce formatting (Black, Prettier).
+```bash
+pip install pre-commit
+pre-commit install
+pre-commit run --all-files
+```
+
+---
+
+## 🧪 Testing & Validation Guide
+
+### Service Tests
+```bash
+# Test Field Extraction logic
+docker-compose exec backend python -m app.services.extraction.test_extraction
+
+# Test Entity Resolution
+docker-compose exec backend python -m app.services.entity_resolution.test_entity_resolution
+```
+
+### API Tests (cURL)
+```bash
+# Add a Person
+curl -X POST "http://localhost:8000/api/v1/persons/" \
+  -H "Content-Type: application/json" \
+  -d '{ "name_urdu": "محمد احمد", "name_english": "Muhammad Ahmad", "confidence": 0.9 }'
+
+# Query Parcels
+curl "http://localhost:8000/api/v1/parcels/?village_id=VILLAGE_001"
+```
+
+---
+
+## 📝 Recent Development Updates (Dec 7, 2025)
+
+1.  **Farmer Stats Endpoint**: Implemented `/api/v1/parcels/stats/farmers`.
+2.  **Mobile Auth**: Fixed OAuth redirect loop for Expo Go.
+3.  **Documentation**: Consolidated 15+ files into `documentation/`.
+4.  **Security**: Completed `fix-react2shell-next` scan (Result: Clean).
+5.  **Integration**: Created `FRAPPE_INTEGRATION_MASTER.md`.
+
+---
+
+## 🔧 Troubleshooting
+
+-   **Backend won't start**: Check logs `docker-compose logs backend`.
+-   **DB Connection**: Ensure `db` container is healthy.
+-   **MinIO**: Bucket creation is automatic on first upload.
+-   **Native Mobile Build**: For Maps/Camera, see [Native Build Guide](documentation/Architecture_Stack/NATIVE_BUILD_MASTER_GUIDE.md).
+
+---
+
 ## 🔄 Deployment & CI/CD
 
 ### Backend
