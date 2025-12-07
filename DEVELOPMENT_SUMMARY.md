@@ -1,122 +1,99 @@
-# Development Summary - December 7, 2025
+# Development Summary & Guide
 
-## 🎯 Problem Fixed
-
-**Critical Issue:** Frontend ↔ Backend Model Mismatch
-- Frontend was calculating `totalFarmers` by processing individual parcel `owner_id` fields client-side
-- This approach was inefficient and didn't properly reflect unique farmer counts
-- Hardcoded workaround: `totalFarmers: 0`
-
-## ✅ Solution Implemented
-
-### Backend Enhancement
-**New Endpoint:** `GET /api/v1/parcels/stats/farmers`
-
-**File Modified:** `backend/app/api/v1/parcels.py`
-- Added database-level aggregation using SQLAlchemy
-- Returns comprehensive farmer statistics:
-  ```json
-  {
-    "total_farmers": 1,
-    "total_parcels": 5,
-    "avg_parcels_per_farmer": 5.0
-  }
-  ```
-- Proper filtering for null/empty `owner_id` values
-- Efficient: Single API call vs. processing all parcels client-side
-
-**Imports Added:**
-- `from sqlalchemy import func, distinct`
-
-### Frontend Improvement
-**File Modified:** `frontend/src/App.tsx`
-- Removed client-side farmer count calculation
-- Now calls backend `/parcels/stats/farmers` endpoint
-- Includes proper error handling with fallback values
-- Uses Bearer token authentication
-- More efficient: Offloads aggregation to database
-
-**Code Changes:**
-- Updated stats query to call new endpoint
-- Added error handling with try-catch
-- Maintains fallback for graceful degradation
-
-### Testing
-**New Test File:** `backend/tests/api/test_parcels.py`
-- Comprehensive test suite (228 lines)
-- Tests farmer stats endpoint thoroughly:
-  - Empty database
-  - Single farmer with multiple parcels
-  - Multiple farmers
-  - Null owner handling
-  - Duplicate owners counting
-
-## 🔍 Verification Results
-
-### Backend Tests
-- ✅ Endpoint accessible: http://localhost:8000/api/v1/parcels/stats/farmers
-- ✅ Returns correct JSON structure
-- ✅ Database queries working
-- ✅ Python syntax validated
-
-### Frontend Tests
-- ✅ TypeScript compilation successful
-- ✅ No build errors
-- ✅ Frontend builds to production bundle
-
-### Integration Tests
-- ✅ Backend health: `{"status":"ok"}`
-- ✅ Farmer stats endpoint: Responding with real data
-- ✅ Database connectivity: Verified
-- ✅ Docker services: All running
-
-## 📊 Development Context
-
-### Running Services
-| Service | Port | Status |
-|---------|------|--------|
-| Frontend | 5173 | ✅ Running |
-| Backend | 8000 | ✅ Running |
-| Keycloak | 8080 | ✅ Running |
-| PostgreSQL | 5432 | ✅ Running |
-| Redis | 6379 | ✅ Running |
-
-### Documentation Status
-- ✅ PORTS_AND_SERVICES.md: Accurate
-- ⚠️ Frontend dev port (5173) not documented
-- ⚠️ Development vs. production workflow needs clarification
-
-### Code Quality
-- ✅ Backend: No syntax errors
-- ⚠️ Frontend: 15 ESLint warnings (pre-existing)
-- ⚠️ Backend logs: 5 error lines (pre-existing)
-
-## 🚀 Ready for Production
-
-- ✅ Code changes tested and validated
-- ✅ API endpoints working
-- ✅ Database aggregations efficient
-- ✅ Error handling implemented
-- ✅ Frontend and backend synchronized
-
-## 📝 Next Steps
-
-1. **Documentation Updates:**
-   - Add frontend dev port to PORTS_AND_SERVICES.md
-   - Create DEVELOPMENT_SETUP.md
-   - Update QUICKSTART.md with new endpoint
-
-2. **Code Quality:**
-   - Fix ESLint warnings in frontend
-   - Investigate backend log errors
-   - Add TypeScript type safety
-
-3. **Integration Testing:**
-   - Verify frontend → backend flow end-to-end
-   - Test with different farmer counts
-   - Validate error scenarios
+**Last Updated:** December 7, 2025
+**Status:** ✅ Project Structured & Documented
 
 ---
 
-**Deployed:** December 7, 2025, 14:30 IST
-**Status:** ✅ READY FOR PRODUCTION
+## 📂 Project Structure
+
+The project has been reorganized for clarity. All documentation files are now centralized in `documentation/`.
+
+```
+/
+├── backend/                # FastAPI Application
+│   ├── app/                # Application Source
+│   ├── tests/              # Pytest Suite
+│   └── Dockerfile          # Python Service Build
+│
+├── frontend/               # React + Vite Application
+│   ├── src/                # Frontend Source
+│   └── vite.config.ts      # Build Configuration
+│
+├── mobile/                 # React Native (Expo) Application
+│   ├── src/                # Mobile Source
+│   ├── ios/                # Native iOS Bridge
+│   └── app.json            # Expo Configuration
+│
+├── documentation/          # 📘 CENTRALIZED DOCS
+│   ├── Executive_Summary/  # High-level System Health
+│   ├── Architecture_Stack/ # Deep Technical Specs (OCR, Sync, Maps)
+│   ├── System_Status/      # Build Guides & Quickstarts
+│   └── Testing_Reports/    # Test Results & Logs
+│
+├── frappe_docker/          # Frappe Service Configuration
+├── config/                 # Service Configurations (Keycloak, etc.)
+├── monitoring/             # Prometheus/Grafana Configs
+└── docker-compose.yml      # Orchestration
+```
+
+---
+
+## 🛠️ Quality Assurance: Pre-commit Hooks
+
+To ensure code quality and prevent "unable to order file" issues or formatting messiness, we have installed **pre-commit hooks**.
+
+### 1. Installation
+
+```bash
+# Install pre-commit (if not already installed)
+pip install pre-commit
+
+# Install the git hooks for this repo
+pre-commit install
+```
+
+### 2. Configuration (`.pre-commit-config.yaml`)
+
+The following checks run automatically on every `git commit`:
+
+| Hook ID | Description |
+|---------|-------------|
+| `trailing-whitespace` | Removes trailing spaces. |
+| `end-of-file-fixer` | Ensures files end with a newline. |
+| `check-yaml` | Validates YAML syntax. |
+| `check-json` | Validates JSON syntax. |
+| `check-added-large-files` | Prevents committing files > 1000KB (avoids bloating repo). |
+| `black` | Python code formatter (Backend). |
+| `prettier` | JS/TS code formatter (Frontend/Mobile). |
+
+### 3. Usage
+
+Run against all files manually to normalize the codebase:
+```bash
+pre-commit run --all-files
+```
+
+---
+
+## ⚡ Quick Links
+
+- **[System Health Check](documentation/Executive_Summary/SYSTEM_HEALTH.md)**
+- **[Architecture Deep Dive](documentation/Architecture_Stack/OCR_ARCHITECTURE.md)**
+- **[Mobile Build Guide](documentation/System_Status/EAS_BUILD_GUIDE.md)**
+- **[Test Results](documentation/Testing_Reports/TEST_RESULTS.md)**
+
+---
+
+## 📝 Recent Development Updates
+
+1.  **Farmer Stats Endpoint**: Implemented in Backend (`/api/v1/parcels/stats/farmers`) and connected to Frontend.
+2.  **Mobile Auth**: Fixed OAuth redirect loop for Expo Go.
+3.  **Documentation Cleanup**: Consolidated 15+ scattered files into `documentation/` structure.
+4.  **Security**: Added `fix-react2shell-next` scan (Result: Clean).
+
+---
+
+**Next Steps:**
+- Run `pre-commit run --all-files` to format the entire codebase.
+- Push changes to GitHub.
