@@ -91,6 +91,7 @@ pre-commit run --all-files
 2.  **Mobile Auth**: Fixed OAuth redirect loop for Expo Go.
 3.  **Documentation Cleanup**: Consolidated 15+ scattered files into `documentation/` structure.
 4.  **Security**: Added `fix-react2shell-next` scan (Result: Clean).
+5.  **Documentation**: Created `documentation/Architecture_Stack/CUSTOM_DOCTYPE_SPEC.md` detailing all custom doctypes and missing hierarchies.
 
 ---
 
