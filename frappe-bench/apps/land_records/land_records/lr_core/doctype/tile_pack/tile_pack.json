@@ -1,0 +1,70 @@
+{
+    "actions": [],
+    "creation": "2024-12-05 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "pack_id",
+        "district",
+        "version",
+        "signed_manifest",
+        "cache_hints"
+    ],
+    "fields": [
+        {
+            "fieldname": "pack_id",
+            "fieldtype": "Data",
+            "label": "Pack ID",
+            "unique": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "district",
+            "fieldtype": "Data",
+            "label": "District",
+            "reqd": 1
+        },
+        {
+            "fieldname": "version",
+            "fieldtype": "Data",
+            "label": "Version"
+        },
+        {
+            "fieldname": "signed_manifest",
+            "fieldtype": "Text",
+            "label": "Signed Manifest"
+        },
+        {
+            "fieldname": "cache_hints",
+            "fieldtype": "JSON",
+            "label": "Cache Hints"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-05 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Tile Pack",
+    "naming_rule": "By fieldname",
+    "autoname": "field:pack_id",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

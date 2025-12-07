@@ -1,0 +1,98 @@
+{
+    "actions": [],
+    "creation": "2024-12-04 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "scan_id",
+        "document_type",
+        "upload_date",
+        "status",
+        "file_url",
+        "source",
+        "pages",
+        "checksum",
+        "quality_metrics"
+    ],
+    "fields": [
+        {
+            "fieldname": "scan_id",
+            "fieldtype": "Data",
+            "label": "Scan ID",
+            "unique": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "document_type",
+            "fieldtype": "Select",
+            "label": "Document Type",
+            "options": "Girdawari\nKhasra\nMutation\nRegistry",
+            "reqd": 1
+        },
+        {
+            "fieldname": "upload_date",
+            "fieldtype": "Datetime",
+            "label": "Upload Date",
+            "default": "Now"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Uploaded\nProcessing\nProcessed\nFailed",
+            "default": "Uploaded"
+        },
+        {
+            "fieldname": "file_url",
+            "fieldtype": "Attach Image",
+            "label": "File"
+        },
+        {
+            "fieldname": "source",
+            "fieldtype": "Data",
+            "label": "Source"
+        },
+        {
+            "fieldname": "pages",
+            "fieldtype": "Int",
+            "label": "Pages"
+        },
+        {
+            "fieldname": "checksum",
+            "fieldtype": "Data",
+            "label": "Checksum"
+        },
+        {
+            "fieldname": "quality_metrics",
+            "fieldtype": "JSON",
+            "label": "Quality Metrics"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-04 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Document Scan",
+    "naming_rule": "By fieldname",
+    "autoname": "field:scan_id",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

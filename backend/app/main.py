@@ -1,0 +1,106 @@
+from fastapi import FastAPI, Request
+from fastapi.responses import Response
+from app.api import ocr
+from app.api.v1 import persons, parcels, frappe_sync
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from app.core.metrics import (
+    http_requests_total, 
+    http_request_duration_seconds,
+    active_requests,
+    app_info
+)
+import time
+
+app = FastAPI(
+    title="Land Records OCR API",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json"
+)
+
+# Set app info
+app_info.info({
+    "version": "1.0.0",
+    "environment": "development",
+    "service": "land-records-backend"
+})
+
+from fastapi.middleware.cors import CORSMiddleware
+
+# Configure CORS
+origins = [
+    "http://localhost:3000",  # React PWA
+    "http://localhost:8081",  # React Native Metro Bundler
+    "http://localhost:8000",  # Swagger UI
+    "http://localhost:8080",  # React Native Web (Custom Port)
+    "*", # Allow all for development, restrict in production
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Prometheus metrics middleware
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    # Skip metrics endpoint itself
+    if request.url.path == "/metrics":
+        return await call_next(request)
+    
+    active_requests.inc()
+    start_time = time.time()
+    
+    try:
+        response = await call_next(request)
+        duration = time.time() - start_time
+        
+        # Record metrics
+        http_requests_total.labels(
+            method=request.method,
+            endpoint=request.url.path,
+            status=response.status_code
+        ).inc()
+        
+        http_request_duration_seconds.labels(
+            method=request.method,
+            endpoint=request.url.path
+        ).observe(duration)
+        
+        return response
+    finally:
+        active_requests.dec()
+
+app.include_router(ocr.router, prefix="/api/v1")
+app.include_router(persons.router, prefix="/api/v1")
+app.include_router(parcels.router, prefix="/api/v1")
+app.include_router(frappe_sync.router, prefix="/api/v1")
+from app.api.v1 import sync
+app.include_router(sync.router, prefix="/api/v1")
+from app.api.v1 import files
+app.include_router(files.router, prefix="/api/v1")
+from app.api.v1 import geo
+app.include_router(geo.router, prefix="/api/v1")
+from app.api.v1 import reviews
+app.include_router(reviews.router, prefix="/api/v1/reviews", tags=["reviews"])
+from app.api.v1 import webhooks
+app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["webhooks"])
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Land Records OCR System"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+@app.get("/metrics")
+def metrics():
+    """Prometheus metrics endpoint"""
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST
+    )
+

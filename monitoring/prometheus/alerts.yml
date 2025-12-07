@@ -1,0 +1,98 @@
+groups:
+  - name: land_records_alerts
+    rules:
+      # OCR Processing Alerts
+      - alert: HighOCRErrorRate
+        expr: rate(ocr_requests_failed_total[5m]) / rate(ocr_requests_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High OCR error rate detected"
+          description: "OCR error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+
+      - alert: OCRLatencyHigh
+        expr: histogram_quantile(0.95, rate(ocr_request_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "OCR processing latency is high"
+          description: "95th percentile OCR latency is {{ $value | humanizeDuration }}"
+
+      # Review Task Alerts
+      - alert: PendingReviewTasksHigh
+        expr: review_tasks_pending_total > 50
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Many pending review tasks"
+          description: "{{ $value }} review tasks are pending for more than 30 minutes"
+
+      - alert: CriticalReviewTasksUnassigned
+        expr: review_tasks_unassigned{priority="critical"} > 5
+        for: 15m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical review tasks unassigned"
+          description: "{{ $value }} critical review tasks have been unassigned for 15+ minutes"
+
+      # Sync Alerts
+      - alert: SyncFailureRate
+        expr: rate(sync_operations_failed_total[10m]) / rate(sync_operations_total[10m]) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High sync failure rate"
+          description: "Sync failure rate is {{ $value | humanizePercentage }}"
+
+      - alert: SyncQueueBacklog
+        expr: sync_queue_pending_items > 100
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Sync queue backlog building up"
+          description: "{{ $value }} items pending in sync queue"
+
+      # Infrastructure Alerts
+      - alert: BackendDown
+        expr: up{job="land_records_backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend service is down"
+          description: "Land Records backend has been down for more than 1 minute"
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 > 500
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Backend is using {{ $value | humanize }}MB of memory"
+
+      # Database Alerts
+      - alert: DatabaseConnectionPoolExhausted
+        expr: db_pool_available_connections < 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Only {{ $value }} connections available"
+
+      # Low Confidence Extraction Alerts
+      - alert: LowConfidenceExtractionsHigh
+        expr: rate(extraction_low_confidence_total[1h]) / rate(extraction_total[1h]) > 0.3
+        for: 1h
+        labels:
+          severity: info
+        annotations:
+          summary: "High rate of low-confidence extractions"
+          description: "{{ $value | humanizePercentage }} of extractions have low confidence - may indicate document quality issues"

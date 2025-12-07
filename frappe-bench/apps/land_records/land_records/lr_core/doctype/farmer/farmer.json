@@ -1,0 +1,150 @@
+{
+    "actions": [],
+    "creation": "2024-12-04 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "farmer_id",
+        "name_urdu",
+        "name_english",
+        "father_name",
+        "village",
+        "confidence",
+        "consent_flags",
+        "aadhaar_hash",
+        "demographics",
+        "contact",
+        "role_flags",
+        "linked_parcels"
+    ],
+    "fields": [
+        {
+            "fieldname": "farmer_id",
+            "fieldtype": "Data",
+            "label": "Farmer ID",
+            "unique": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "name_urdu",
+            "fieldtype": "Data",
+            "label": "Name (Urdu)"
+        },
+        {
+            "fieldname": "name_english",
+            "fieldtype": "Data",
+            "label": "Name (English)"
+        },
+        {
+            "fieldname": "father_name",
+            "fieldtype": "Data",
+            "label": "Father Name"
+        },
+        {
+            "fieldname": "village",
+            "fieldtype": "Link",
+            "label": "Village",
+            "options": "Village"
+        },
+        {
+            "fieldname": "confidence",
+            "fieldtype": "Float",
+            "label": "Confidence"
+        },
+        {
+            "fieldname": "consent_flags",
+            "fieldtype": "JSON",
+            "label": "Consent Flags"
+        },
+        {
+            "fieldname": "aadhaar_hash",
+            "fieldtype": "Data",
+            "label": "Aadhaar Hash",
+            "hidden": 1
+        },
+        {
+            "fieldname": "demographics",
+            "fieldtype": "JSON",
+            "label": "Demographics"
+        },
+        {
+            "fieldname": "contact",
+            "fieldtype": "Data",
+            "label": "Contact Number"
+        },
+        {
+            "fieldname": "role_flags",
+            "fieldtype": "JSON",
+            "label": "Role Flags"
+        },
+        {
+            "fieldname": "linked_parcels",
+            "fieldtype": "Table",
+            "label": "Linked Parcels",
+            "options": "Farmer Parcel Link"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-04 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Farmer",
+    "naming_rule": "By fieldname",
+    "autoname": "field:farmer_id",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Admin",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 0,
+            "delete": 0,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Validator",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 0,
+            "email": 0,
+            "export": 0,
+            "print": 0,
+            "read": 1,
+            "report": 0,
+            "role": "Enumerator",
+            "share": 0,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

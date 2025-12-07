@@ -1,0 +1,9 @@
+{
+ "db_host": "db",
+ "db_name": "_6d8d5fc886c8661f",
+ "db_password": "5ITJxrfmZMdaD3Go",
+ "db_port": 5432,
+ "db_type": "postgres",
+ "developer_mode": 1,
+ "host_name": "http://land-records.local:8000"
+}

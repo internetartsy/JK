@@ -1,0 +1,93 @@
+import os
+import requests
+from typing import Optional, Dict, Any, List
+import logging
+
+logger = logging.getLogger(__name__)
+
+class FrappeClient:
+    """Client for communicating with Frappe API"""
+    
+    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None, api_secret: Optional[str] = None):
+        self.base_url = base_url or os.getenv("FRAPPE_URL", "http://frappe:8000")
+        self.api_key = api_key or os.getenv("FRAPPE_API_KEY")
+        self.api_secret = api_secret or os.getenv("FRAPPE_API_SECRET")
+        
+        self.session = requests.Session()
+        if self.api_key and self.api_secret:
+            self.session.headers.update({
+                "Authorization": f"token {self.api_key}:{self.api_secret}"
+            })
+    
+    def get_doc(self, doctype: str, name: str) -> Dict[str, Any]:
+        """Get a single document from Frappe"""
+        url = f"{self.base_url}/api/resource/{doctype}/{name}"
+        try:
+            response = self.session.get(url)
+            response.raise_for_status()
+            return response.json().get("data", {})
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching {doctype} {name}: {e}")
+            return {}
+    
+    def get_list(self, doctype: str, fields: Optional[List[str]] = None, filters: Optional[Dict] = None, limit: int = 100) -> List[Dict]:
+        """Get list of documents from Frappe"""
+        url = f"{self.base_url}/api/resource/{doctype}"
+        params = {"limit_page_length": limit}
+        
+        if fields:
+            params["fields"] = json.dumps(fields)
+        if filters:
+            params["filters"] = json.dumps(filters)
+        
+        try:
+            response = self.session.get(url, params=params)
+            response.raise_for_status()
+            return response.json().get("data", [])
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching {doctype} list: {e}")
+            return []
+    
+    def create_doc(self, doctype: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a new document in Frappe"""
+        url = f"{self.base_url}/api/resource/{doctype}"
+        try:
+            response = self.session.post(url, json=data)
+            response.raise_for_status()
+            return response.json().get("data", {})
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error creating {doctype}: {e}")
+            return {"error": str(e)}
+    
+    def update_doc(self, doctype: str, name: str, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update an existing document in Frappe"""
+        url = f"{self.base_url}/api/resource/{doctype}/{name}"
+        try:
+            response = self.session.put(url, json=data)
+            response.raise_for_status()
+            return response.json().get("data", {})
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error updating {doctype} {name}: {e}")
+            return {"error": str(e)}
+    
+    def delete_doc(self, doctype: str, name: str) -> bool:
+        """Delete a document from Frappe"""
+        url = f"{self.base_url}/api/resource/{doctype}/{name}"
+        try:
+            response = self.session.delete(url)
+            response.raise_for_status()
+            return True
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error deleting {doctype} {name}: {e}")
+            return False
+    
+    def create_review_task(self, doc_id: str, doc_type: str, confidence: float, fields: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a ReviewTask in Frappe for low-confidence records"""
+        data = {
+            "document_id": doc_id,
+            "document_type": doc_type,
+            "confidence_score": confidence,
+            "extracted_fields": fields,
+            "status": "Pending"
+        }
+        return self.create_doc("Review Task", data)

@@ -1,0 +1,113 @@
+{
+    "actions": [],
+    "creation": "2024-12-04 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "document_id",
+        "document_type",
+        "confidence_score",
+        "extracted_fields",
+        "status",
+        "assigned_to"
+    ],
+    "fields": [
+        {
+            "fieldname": "document_id",
+            "fieldtype": "Data",
+            "label": "Document ID"
+        },
+        {
+            "fieldname": "document_type",
+            "fieldtype": "Select",
+            "label": "Document Type",
+            "options": "Girdawari\nKhasra"
+        },
+        {
+            "fieldname": "confidence_score",
+            "fieldtype": "Float",
+            "label": "Confidence Score"
+        },
+        {
+            "fieldname": "extracted_fields",
+            "fieldtype": "JSON",
+            "label": "Extracted Fields"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Pending\nApproved\nRejected",
+            "default": "Pending"
+        },
+        {
+            "fieldname": "assigned_to",
+            "fieldtype": "Link",
+            "label": "Assigned To",
+            "options": "User"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-04 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Review Task",
+    "naming_rule": "Expression",
+    "autoname": "hash",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Admin",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 0,
+            "delete": 0,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Validator",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 0,
+            "delete": 0,
+            "email": 0,
+            "export": 0,
+            "print": 0,
+            "read": 1,
+            "report": 0,
+            "role": "Enumerator",
+            "share": 0,
+            "write": 0
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

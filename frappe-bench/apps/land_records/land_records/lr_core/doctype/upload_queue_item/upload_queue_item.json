@@ -1,0 +1,72 @@
+{
+    "actions": [],
+    "creation": "2024-12-05 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "item_id",
+        "status",
+        "retries",
+        "chunk_info",
+        "last_error"
+    ],
+    "fields": [
+        {
+            "fieldname": "item_id",
+            "fieldtype": "Data",
+            "label": "Item ID",
+            "unique": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Queued\nProcessing\nCompleted\nFailed",
+            "default": "Queued"
+        },
+        {
+            "fieldname": "retries",
+            "fieldtype": "Int",
+            "label": "Retries",
+            "default": 0
+        },
+        {
+            "fieldname": "chunk_info",
+            "fieldtype": "JSON",
+            "label": "Chunk Info"
+        },
+        {
+            "fieldname": "last_error",
+            "fieldtype": "Text",
+            "label": "Last Error"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-05 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Upload Queue Item",
+    "naming_rule": "By fieldname",
+    "autoname": "field:item_id",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

@@ -1,0 +1,1 @@
+// frappe.ui.form.on('Farmer', { refresh: function(frm) { } });

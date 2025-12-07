@@ -1,0 +1,77 @@
+{
+    "actions": [],
+    "creation": "2024-12-05 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "task_id",
+        "input_text",
+        "target_script",
+        "glossary_version",
+        "status",
+        "approvals"
+    ],
+    "fields": [
+        {
+            "fieldname": "task_id",
+            "fieldtype": "Data",
+            "label": "Task ID",
+            "unique": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "input_text",
+            "fieldtype": "Text",
+            "label": "Input Text"
+        },
+        {
+            "fieldname": "target_script",
+            "fieldtype": "Data",
+            "label": "Target Script"
+        },
+        {
+            "fieldname": "glossary_version",
+            "fieldtype": "Data",
+            "label": "Glossary Version"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Pending\nApproved\nRejected",
+            "default": "Pending"
+        },
+        {
+            "fieldname": "approvals",
+            "fieldtype": "JSON",
+            "label": "Approvals"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-05 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Transliteration Task",
+    "naming_rule": "By fieldname",
+    "autoname": "field:task_id",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

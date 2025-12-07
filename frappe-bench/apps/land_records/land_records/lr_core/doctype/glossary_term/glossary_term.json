@@ -1,0 +1,76 @@
+{
+    "actions": [],
+    "creation": "2024-12-05 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "term_id",
+        "urdu_term",
+        "english_term",
+        "devanagari_term",
+        "domain",
+        "usage_notes"
+    ],
+    "fields": [
+        {
+            "fieldname": "term_id",
+            "fieldtype": "Data",
+            "label": "Term ID",
+            "unique": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "urdu_term",
+            "fieldtype": "Data",
+            "label": "Urdu Term",
+            "reqd": 1
+        },
+        {
+            "fieldname": "english_term",
+            "fieldtype": "Data",
+            "label": "English Term"
+        },
+        {
+            "fieldname": "devanagari_term",
+            "fieldtype": "Data",
+            "label": "Devanagari Term"
+        },
+        {
+            "fieldname": "domain",
+            "fieldtype": "Data",
+            "label": "Domain"
+        },
+        {
+            "fieldname": "usage_notes",
+            "fieldtype": "Text",
+            "label": "Usage Notes"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-05 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Glossary Term",
+    "naming_rule": "By fieldname",
+    "autoname": "field:term_id",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

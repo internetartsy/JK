@@ -1,0 +1,1 @@
+// frappe.ui.form.on('Review Task', { refresh: function(frm) { } });

@@ -1,0 +1,80 @@
+{
+    "creation": "2024-12-04 00:00:00.000000",
+    "docstatus": 0,
+    "doctype": "Workflow",
+    "document_type": "Claim",
+    "is_active": 1,
+    "modified": "2024-12-04 00:00:00.000000",
+    "modified_by": "Administrator",
+    "name": "Claim Workflow",
+    "owner": "Administrator",
+    "states": [
+        {
+            "allow_edit": "Enumerator",
+            "doc_status": 0,
+            "state": "Draft",
+            "update_field": "status",
+            "update_value": "Draft"
+        },
+        {
+            "allow_edit": "Validator",
+            "doc_status": 0,
+            "state": "Pending Review",
+            "update_field": "status",
+            "update_value": "Pending Review"
+        },
+        {
+            "allow_edit": "Admin",
+            "doc_status": 1,
+            "state": "Approved",
+            "update_field": "status",
+            "update_value": "Approved"
+        },
+        {
+            "allow_edit": "Admin",
+            "doc_status": 2,
+            "state": "Rejected",
+            "update_field": "status",
+            "update_value": "Rejected"
+        }
+    ],
+    "transitions": [
+        {
+            "action": "Submit",
+            "allowed": "Enumerator",
+            "allow_self_approval": 1,
+            "next_state": "Pending Review",
+            "state": "Draft"
+        },
+        {
+            "action": "Approve",
+            "allowed": "Validator",
+            "allow_self_approval": 1,
+            "next_state": "Approved",
+            "state": "Pending Review"
+        },
+        {
+            "action": "Reject",
+            "allowed": "Validator",
+            "allow_self_approval": 1,
+            "next_state": "Rejected",
+            "state": "Pending Review"
+        },
+        {
+            "action": "Approve",
+            "allowed": "Admin",
+            "allow_self_approval": 1,
+            "next_state": "Approved",
+            "state": "Pending Review"
+        },
+        {
+            "action": "Reject",
+            "allowed": "Admin",
+            "allow_self_approval": 1,
+            "next_state": "Rejected",
+            "state": "Pending Review"
+        }
+    ],
+    "workflow_name": "Claim Workflow",
+    "workflow_state_field": "status"
+}

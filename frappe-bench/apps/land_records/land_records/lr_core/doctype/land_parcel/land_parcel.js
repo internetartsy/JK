@@ -1,0 +1,1 @@
+// frappe.ui.form.on('Land Parcel', { refresh: function(frm) { } });

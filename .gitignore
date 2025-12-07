@@ -1,0 +1,67 @@
+# General
+.DS_Store
+.vscode/
+.idea/
+*.log
+*.swp
+.env
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / JS
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.yarn/
+
+# Mobile (Expo/React Native)
+.expo/
+web-build/
+*.jks
+*.p12
+*.keystore
+/mobile/android/
+/mobile/ios/
+
+# Docker
+docker-data/
+postgres_data/
+minio_data/
+redis_data/
+prometheus_data/
+grafana_data/
+alertmanager_data/
+
+# Frappe
+frappe-bench/sites/
+frappe-bench/logs/
+frappe-bench/config/
+!frappe-bench/config/pids

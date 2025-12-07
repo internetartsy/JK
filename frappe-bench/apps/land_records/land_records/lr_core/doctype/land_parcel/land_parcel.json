@@ -1,0 +1,162 @@
+{
+    "actions": [],
+    "creation": "2024-12-04 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "parcel_id",
+        "village_id",
+        "khasra_number",
+        "area_text",
+        "area_geom",
+        "status",
+        "version",
+        "geojson",
+        "tehsil",
+        "district",
+        "ownership_status",
+        "cultivation_status",
+        "provenance",
+        "confidence"
+    ],
+    "fields": [
+        {
+            "fieldname": "parcel_id",
+            "fieldtype": "Data",
+            "label": "Parcel ID",
+            "unique": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "village_id",
+            "fieldtype": "Data",
+            "label": "Village ID"
+        },
+        {
+            "fieldname": "khasra_number",
+            "fieldtype": "Data",
+            "label": "Khasra Number"
+        },
+        {
+            "fieldname": "area_text",
+            "fieldtype": "Data",
+            "label": "Area Text"
+        },
+        {
+            "fieldname": "area_geom",
+            "fieldtype": "Float",
+            "label": "Area Geom"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Active\nDisputed\nInactive"
+        },
+        {
+            "fieldname": "version",
+            "fieldtype": "Int",
+            "label": "Version"
+        },
+        {
+            "fieldname": "geojson",
+            "fieldtype": "Long Text",
+            "label": "GeoJSON"
+        },
+        {
+            "fieldname": "tehsil",
+            "fieldtype": "Data",
+            "label": "Tehsil"
+        },
+        {
+            "fieldname": "district",
+            "fieldtype": "Data",
+            "label": "District"
+        },
+        {
+            "fieldname": "ownership_status",
+            "fieldtype": "Select",
+            "label": "Ownership Status",
+            "options": "Private\nState\nCommon\nDisputed"
+        },
+        {
+            "fieldname": "cultivation_status",
+            "fieldtype": "Select",
+            "label": "Cultivation Status",
+            "options": "Self-Cultivated\nTenant-Cultivated\nFallow"
+        },
+        {
+            "fieldname": "provenance",
+            "fieldtype": "Data",
+            "label": "Provenance"
+        },
+        {
+            "fieldname": "confidence",
+            "fieldtype": "Float",
+            "label": "Confidence Score"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-04 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Land Parcel",
+    "naming_rule": "By fieldname",
+    "autoname": "field:parcel_id",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Admin",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 0,
+            "delete": 0,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Validator",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 0,
+            "email": 0,
+            "export": 0,
+            "print": 0,
+            "read": 1,
+            "report": 0,
+            "role": "Enumerator",
+            "share": 0,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

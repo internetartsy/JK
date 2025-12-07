@@ -1,0 +1,103 @@
+{
+    "actions": [],
+    "creation": "2024-12-04 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "result_id",
+        "scan_id",
+        "raw_text",
+        "confidence_score",
+        "processed_date",
+        "extracted_data",
+        "doc_reference",
+        "language",
+        "structure",
+        "corrections"
+    ],
+    "fields": [
+        {
+            "fieldname": "result_id",
+            "fieldtype": "Data",
+            "label": "Result ID",
+            "unique": 1,
+            "reqd": 1
+        },
+        {
+            "fieldname": "scan_id",
+            "fieldtype": "Link",
+            "label": "Scan ID",
+            "options": "Document Scan",
+            "reqd": 1
+        },
+        {
+            "fieldname": "raw_text",
+            "fieldtype": "Text",
+            "label": "Raw Text"
+        },
+        {
+            "fieldname": "confidence_score",
+            "fieldtype": "Float",
+            "label": "Confidence Score"
+        },
+        {
+            "fieldname": "processed_date",
+            "fieldtype": "Datetime",
+            "label": "Processed Date",
+            "default": "Now"
+        },
+        {
+            "fieldname": "extracted_data",
+            "fieldtype": "JSON",
+            "label": "Extracted Data"
+        },
+        {
+            "fieldname": "doc_reference",
+            "fieldtype": "Link",
+            "label": "Document Reference",
+            "options": "Document Scan"
+        },
+        {
+            "fieldname": "language",
+            "fieldtype": "Data",
+            "label": "Language"
+        },
+        {
+            "fieldname": "structure",
+            "fieldtype": "JSON",
+            "label": "Structure"
+        },
+        {
+            "fieldname": "corrections",
+            "fieldtype": "JSON",
+            "label": "Corrections"
+        }
+    ],
+    "links": [],
+    "modified": "2024-12-04 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "OCR Result",
+    "naming_rule": "By fieldname",
+    "autoname": "field:result_id",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}

@@ -1,0 +1,258 @@
+app_name = "land_records"
+app_title = "Land Records"
+app_publisher = "Me"
+app_description = "Land Records Management System"
+app_email = "me@example.com"
+app_license = "mit"
+
+# Apps
+# ------------------
+
+# required_apps = []
+
+# Each item in the list will be shown as an app in the apps page
+# add_to_apps_screen = [
+# 	{
+# 		"name": "land_records",
+# 		"logo": "/assets/land_records/logo.png",
+# 		"title": "Land Records",
+# 		"route": "/land_records",
+# 		"has_permission": "land_records.api.permission.has_app_permission"
+# 	}
+# ]
+
+# Includes in <head>
+# ------------------
+
+# include js, css files in header of desk.html
+# app_include_css = "/assets/land_records/css/land_records.css"
+# app_include_js = "/assets/land_records/js/land_records.js"
+
+# include js, css files in header of web template
+# web_include_css = "/assets/land_records/css/land_records.css"
+# web_include_js = "/assets/land_records/js/land_records.js"
+
+# include custom scss in every website theme (without file extension ".scss")
+# website_theme_scss = "land_records/public/scss/website"
+
+# include js, css files in header of web form
+# webform_include_js = {"doctype": "public/js/doctype.js"}
+# webform_include_css = {"doctype": "public/css/doctype.css"}
+
+# include js in page
+# page_js = {"page" : "public/js/file.js"}
+
+# include js in doctype views
+# doctype_js = {"doctype" : "public/js/doctype.js"}
+# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+# doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
+# doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
+
+# Svg Icons
+# ------------------
+# include app icons in desk
+# app_include_icons = "land_records/public/icons.svg"
+
+# Home Pages
+# ----------
+
+# application home page (will override Website Settings)
+# home_page = "login"
+
+# website user home page (by Role)
+# role_home_page = {
+# 	"Role": "home_page"
+# }
+
+# Generators
+# ----------
+
+# automatically create page for each record of this doctype
+# website_generators = ["Web Page"]
+
+# Jinja
+# ----------
+
+# add methods and filters to jinja environment
+# jinja = {
+# 	"methods": "land_records.utils.jinja_methods",
+# 	"filters": "land_records.utils.jinja_filters"
+# }
+
+# Installation
+# ------------
+
+# before_install = "land_records.install.before_install"
+# after_install = "land_records.install.after_install"
+
+# Uninstallation
+# ------------
+
+# before_uninstall = "land_records.uninstall.before_uninstall"
+# after_uninstall = "land_records.uninstall.after_uninstall"
+
+# Integration Setup
+# ------------------
+# To set up dependencies/integrations with other apps
+# Name of the app being installed is passed as an argument
+
+# before_app_install = "land_records.utils.before_app_install"
+# after_app_install = "land_records.utils.after_app_install"
+
+# Integration Cleanup
+# -------------------
+# To clean up dependencies/integrations with other apps
+# Name of the app being uninstalled is passed as an argument
+
+# before_app_uninstall = "land_records.utils.before_app_uninstall"
+# after_app_uninstall = "land_records.utils.after_app_uninstall"
+
+# Desk Notifications
+# ------------------
+# See frappe.core.notifications.get_notification_config
+
+# notification_config = "land_records.notifications.get_notification_config"
+
+# Permissions
+# -----------
+# Permissions evaluated in scripted ways
+
+# permission_query_conditions = {
+# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
+# }
+#
+# has_permission = {
+# 	"Event": "frappe.desk.doctype.event.event.has_permission",
+# }
+
+# DocType Class
+# ---------------
+# Override standard doctype classes
+
+# override_doctype_class = {
+# 	"ToDo": "custom_app.overrides.CustomToDo"
+# }
+
+# Document Events
+# ---------------
+# Hook on document methods and events
+
+doc_events = {
+    "Farmer": {
+        "after_insert": "land_records.api.sync_farmer",
+        "after_save": "land_records.api.sync_farmer",
+        "before_delete": "land_records.api.sync_farmer_delete"
+    },
+    "Land Parcel": {
+        "after_insert": "land_records.api.sync_land_parcel",
+        "after_save": "land_records.api.sync_land_parcel",
+        "before_delete": "land_records.api.sync_land_parcel_delete"
+    },
+    "Review Task": {
+        "after_insert": "land_records.api.sync_review_task",
+        "after_save": "land_records.api.sync_review_task"
+    }
+}
+
+# Scheduled Tasks
+# ---------------
+
+# scheduler_events = {
+# 	"all": [
+# 		"land_records.tasks.all"
+# 	],
+# 	"daily": [
+# 		"land_records.tasks.daily"
+# 	],
+# 	"hourly": [
+# 		"land_records.tasks.hourly"
+# 	],
+# 	"weekly": [
+# 		"land_records.tasks.weekly"
+# 	],
+# 	"monthly": [
+# 		"land_records.tasks.monthly"
+# 	],
+# }
+
+# Testing
+# -------
+
+# before_tests = "land_records.install.before_tests"
+
+# Overriding Methods
+# ------------------------------
+#
+# override_whitelisted_methods = {
+# 	"frappe.desk.doctype.event.event.get_events": "land_records.event.get_events"
+# }
+#
+# each overriding function accepts a `data` argument;
+# generated from the base implementation of the doctype dashboard,
+# along with any modifications made in other Frappe apps
+# override_doctype_dashboards = {
+# 	"Task": "land_records.task.get_dashboard_data"
+# }
+
+# exempt linked doctypes from being automatically cancelled
+#
+# auto_cancel_exempted_doctypes = ["Auto Repeat"]
+
+# Ignore links to specified DocTypes when deleting documents
+# -----------------------------------------------------------
+
+# ignore_links_on_delete = ["Communication", "ToDo"]
+
+# Request Events
+# ----------------
+# before_request = ["land_records.utils.before_request"]
+# after_request = ["land_records.utils.after_request"]
+
+# Job Events
+# ----------
+# before_job = ["land_records.utils.before_job"]
+# after_job = ["land_records.utils.after_job"]
+
+# User Data Protection
+# --------------------
+
+# user_data_fields = [
+# 	{
+# 		"doctype": "{doctype_1}",
+# 		"filter_by": "{filter_by}",
+# 		"redact_fields": ["{field_1}", "{field_2}"],
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_2}",
+# 		"filter_by": "{filter_by}",
+# 		"partial": 1,
+# 	},
+# 	{
+# 		"doctype": "{doctype_3}",
+# 		"strict": False,
+# 	},
+# 	{
+# 		"doctype": "{doctype_4}"
+# 	}
+# ]
+
+# Authentication and authorization
+# --------------------------------
+
+# auth_hooks = [
+# 	"land_records.auth.validate"
+# ]
+
+# Automatically update python controller files with type annotations for this app.
+# export_python_type_annotations = True
+
+# default_log_clearing_doctypes = {
+# 	"Logging DocType Name": 30  # days to retain logs
+# }
+
+# Translation
+# ------------
+# List of apps whose translatable strings should be excluded from this app's translations.
+# ignore_translatable_strings_from = []
+
