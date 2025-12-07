@@ -152,4 +152,18 @@ To ensure the native build works with Keycloak:
 **Mocking Auth for Testing**:
 If you need to bypass OAuth (e.g., if Keycloak is down), set `MOCK_AUTH = true` in `src/screens/LoginScreen.tsx`.
 
+---
+
+## 9. Camera & OCR Feature Status
+**Status: MOCKED IN EXPO GO**
+
+### Why is the camera black in Expo Go?
+- **Expo Go** includes a standard set of native libraries.
+- The Camera (`react-native-vision-camera`) and OCR (`react-native-mlkit-ocr`) are **custom native libraries**.
+- They **cannot run** inside the standard Expo Go app.
+
+### How to get Real Camera?
+To use the real camera, you must use the **Native Development Build** (as described in section 3 of this guide).
+Once built, the camera and OCR features will work seamlessly.
+
 **You are now running a production-grade native environment!** 🚀
