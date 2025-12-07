@@ -70,6 +70,11 @@
             "label": "Tehsil"
         },
         {
+            "fieldname": "halqa",
+            "fieldtype": "Data",
+            "label": "Halqa"
+        },
+        {
             "fieldname": "district",
             "fieldtype": "Data",
             "label": "District"

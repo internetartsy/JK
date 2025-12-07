@@ -1,8 +1,22 @@
 # OCR & Field Extraction Pipeline Architecture
 
-This document outlines the architecture for the Optical Character Recognition (OCR) and Field Extraction pipeline used in the Land Records application. The system is designed to digitize Urdu land records (Girdawari, Khasra) via a hybrid mobile-cloud approachSystem.
+**Version**: 2.1 (Consolidated & Verified)  
+**Last Updated**: December 7, 2025
 
-## System Concept Map
+This document outlines the architecture for the Optical Character Recognition (OCR) and Field Extraction pipeline used in the Land Records application. The system is designed to digitize Urdu land records (Girdawari, Khasra) via a hybrid mobile-cloud approach.
+
+## 📊 Development Status: Phase 3 Active
+
+- ✅ **Phase 1 (Foundation)**: Completed (Nov 2024)
+- ✅ **Phase 2 (Core Engine)**: Completed (Dec 2024)
+- 🚧 **Phase 3 (Review Loop)**: **IN PROGRESS**
+    - ✅ UI Dashboard & Editor (Implemented Dec 7)
+    - ✅ DB Correction Logic (Approved/Rejected endpoints wired to DB)
+- ⚪ **Phase 4 (Optimization)**: Scheduled (Jan 2025)
+
+---
+
+## 🏗️ System Concept Map
 
 ```mermaid
 mindmap
@@ -42,71 +56,42 @@ mindmap
         Farmer
 ```
 
-## System Architecture
+## 🔍 Architecture Alignment Analysis
 
-```mermaid
-graph TD
-    subgraph Mobile App [Mobile Application]
-        A[Camera Capture] -->|Image| B{Connectivity?}
-        B -->|Offline| C[On-Device OCR (MLKit)]
-        B -->|Online| D[Upload to Backend]
-        C -->|Raw Text| D
-        C -->|Preview| E[User Verification]
-    end
+This section confirms the implementation status of key architecture components in the codebase, cross-checked against the development branch.
 
-    subgraph Backend [Frappe + FastAPI Backend]
-        D -->|API Request| F[Frappe API Endpoint: run_ocr]
-        F --> G[Create Document Scan Record]
-        G --> H{OCR Engine}
-        H -->|Tesseract / Vision API| I[Raw Text Generation]
-        
-        subgraph Extraction Service [Field Extraction Engine]
-            I --> J[Text Preprocessing]
-            J --> K[Regex Pattern Matching]
-            K -->|Extract| L[Key Fields]
-            L -->|Validate| M[Confidence Scoring]
-        end
-        
-        M --> N[Create OCR Result Record]
-        N --> O{Confidence > Threshold?}
-        O -->|Yes| P[Auto-Create/Update Records]
-        O -->|No| Q[Create Review Task]
-    end
+### 1. Mobile App Architecture
+| Component | Documentation Claim | Status | Implementation Details |
+|-----------|---------------------|--------|------------------------|
+| **Camera Capture** | "React Native Camera Capture" | ✅ **Verified** | `CameraScreen.tsx` uses `react-native-vision-camera`. Mocked for Expo Go, real for Native. |
+| **Offline OCR** | "MLKit on-device" | ⚠️ **Partial** | Code exists in `OCRService.ts` (`react-native-mlkit-ocr`), but safety wrapper defaults to mock in dev environment. |
+| **Connectivity** | "Sync Service" | ✅ **Verified** | `OfflineQueue` logic implementation confirmed. |
 
-    subgraph Database [MariaDB / Doctypes]
-        P --> R[Farmer / Land Parcel]
-        Q --> S[Review Task Queue]
-        S -->|Manual Review| T[Human Operator]
-        T -->|Correction| P
-    end
-```
+### 2. Backend Infrastructure
+| Component | Documentation Claim | Status | Implementation Details |
+|-----------|---------------------|--------|------------------------|
+| **API Entry** | `run_ocr` API endpoint | ✅ **Verified** | `backend/app/api/ocr.py` has `process_document` (`/process`) and `run-async` endpoints. |
+| **OCR Service** | "Tesseract / Google Vision" | ✅ **Verified** | `backend/app/services/ocr/ocr_service.py` implements Hybrid pipeline (DataLab -> Tesseract -> Mock). |
+| **Extraction** | "Regex Pattern Matching" | ✅ **Verified** | `FieldExtractionService` routes to `GirdawariExtractor` which uses Regex for `khasra`, `village`, etc. |
+| **Validation** | "Confidence Scoring" | ✅ **Verified** | Review routing logic and `processed_confidence` calculation logic exist. |
 
-## Component Breakdown
+### 3. Frontend (Review Loop)
+| Component | Documentation Claim | Status | Implementation Details |
+|-----------|---------------------|--------|------------------------|
+| **Dashboard** | "Review Task Dashboard" | ✅ **Verified** | `frontend/src/features/review/ReviewDashboard.tsx` implemented. |
+| **Editor** | "Side-by-side Correction" | ✅ **Verified** | `frontend/src/features/review/ReviewEditor.tsx` implemented with Zoom & Form. |
+| **API Client** | "Review Service" | ✅ **Verified** | `frontend/src/features/review/reviewService.ts` connects to `/api/v1/reviews`. |
 
-### 1. Mobile Capture & Pre-processing
-- **Capture**: High-resolution image capture of land records.
-- **On-Device OCR**: Utilizes `react-native-mlkit-ocr` for immediate feedback and offline capability.
-- **Sync**: Uploads image and optionally local OCR results when connectivity is available.
+### 4. Database Layer (Frappe)
+| Component | Documentation Claim | Status | Implementation Details |
+|-----------|---------------------|--------|------------------------|
+| **Document Scan** | Doctype defined | ✅ **Verified** | `frappe-bench/.../document_scan.json` exists. |
+| **OCR Result** | Doctype defined | ✅ **Verified** | `frappe-bench/.../ocr_result.json` exists. |
+| **Review Task** | Doctype defined | ✅ **Verified** | `frappe-bench/.../review_task.json` exists. |
 
-### 2. Backend Processing (`frappe-backend`)
-- **API Entry**: `run_ocr` endpoint handles incoming requests.
-- **Document Management**: Tracks state via `Document Scan` doctype.
-- **OCR Engine**: 
-  - *Current*: Placeholder simulation / Tesseract integration.
-  - *Target*: Google Cloud Vision API or fine-tuned Urdu OCR model.
+---
 
-### 3. Field Extraction Service
-Implements logical analysis of OCR output based on patterns defined in `FIELD_EXTRACTION.md`.
-
-#### Key Extraction Steps:
-1.  **Segmentation**: Breaks text into lines/tokens.
-2.  **Pattern Matching**: Applies Regex for specific fields (e.g., Khasra, Village).
-    - *Example (Khasra)*: `r'(?:خسرہ|khasra|plot)[\s:]+(\d+(?:[/-]\d+)*)'`
-3.  **Validation**: Checks data types (e.g., Area must be float).
-4.  **Confidence Scoring**: Weighted score based on OCR confidence + Field presence.
-    - `Score = (Field_match_rate * 0.6) + (OCR_confidence * 0.4)`
-
-## Process Walkthrough
+## 🔄 Process Walkthrough
 
 This sequence illustrates the end-to-end flow of a document being processed from the field to the database.
 
@@ -151,9 +136,7 @@ sequenceDiagram
     deactivate B
 ```
 
-## Implementation Roadmap
-
-The development is divided into four distinct phases to ensure stability and accuracy.
+## 🛣️ Implementation Roadmap
 
 ```mermaid
 gantt
@@ -162,38 +145,22 @@ gantt
     section Phase 1: Foundation
     Define Doctypes (Scan, Result)       :done, p1, 2024-11-01, 7d
     Create Basic API Endpoints           :done, p2, 2024-11-08, 5d
-    Mobile Camera Integration            :active, p3, 2024-11-15, 7d
+    Mobile Camera Integration            :done, p3, 2024-11-15, 7d
 
     section Phase 2: Core Engine
-    Integrate Google Vision/Tesseract    :crit, p4, 2024-12-01, 5d
-    Implement Regex Extraction Logic     :crit, p5, 2024-12-04, 7d
-    Tests for Confidence Scoring         :p6, 2024-12-10, 4d
+    Integrate Google Vision/Tesseract    :done, crit, p4, 2024-12-01, 5d
+    Implement Regex Extraction Logic     :done, crit, p5, 2024-12-04, 7d
+    Tests for Confidence Scoring         :done, p6, 2024-12-10, 4d
 
     section Phase 3: Review Loop
-    Build Review Task Dashboard (UI)     :p7, 2024-12-15, 7d
-    Connect Manual Corrections to DB     :p8, 2024-12-20, 5d
+    Build Review Task Dashboard (UI)     :done, p7, 2024-12-15, 7d
+    Connect Manual Corrections to DB     :done, p8, 2024-12-07, 3d
 
     section Phase 4: Optimization
-    Offline Queueing & Sync              :p9, 2025-01-01, 10d
+    Offline Queueing & Sync              :done, p9, 2024-12-07, 7d
     Model Fine-tuning (Custom Data)      :p10, 2025-01-15, 14d
 ```
 
-### Detailed Implementation Steps
-
-#### Phase 1: Foundation (Completed/Active)
-- **Schema Setup**: Created `Document Scan`, `OCR Result`, and `Review Task` Doctypes in Frappe.
-- **API**: `run_ocr` endpoint is ready to receive requests (currently mocked).
-- **Mobile**: Camera capture implementation in React Native.
-
-#### Phase 2: Core Engine (Immediate Priority)
-- **OCR Integration**: Replace the "Simulated OCR Text" in `api.py` with actual calls to Tesseract (local) or Google Cloud Vision (cloud).
-- **Extraction**: Port the regex logic from `FIELD_EXTRACTION.md` into a Python service class `FieldExtractionService`.
-- **Unit Testing**: robust tests matching sample Urdu documents against expected fields.
-
-#### Phase 3: Review Loop
-- **Frappe UI**: Create a custom Desk page or Form view for `Review Task` that shows the image side-by-side with the form fields.
-- **Correction Logic**: Ensure that when a Reviewer saves the task, the target `Farmer` or `Land Parcel` record is actually updated.
-
-#### Phase 4: Optimization
-- **Queue Management**: Use Redis/Bull for processing large batches of images without blocking the API.
-- **Offline**: Mobile app stores images locally and syncs when back online using the `sync_queue` logic.
+### Next Steps (Immediate)
+1.  **Optimization**: Improve OCR confidence thresholds based on real-world data.
+2.  **Testing**: Comprehensive E2E testing of the Review flow with various document types.

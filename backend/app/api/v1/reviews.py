@@ -27,15 +27,56 @@ def get_pending_reviews(
 ):
     return db.query(ReviewTask).filter(ReviewTask.status == ReviewStatus.PENDING).offset(skip).limit(limit).all()
 
+class ReviewAction(BaseModel):
+    corrected_data: dict | None = None
+
 @router.post("/{id}/approve")
 def approve_review(
     id: str,
+    action: ReviewAction,
     db: Session = Depends(deps.get_db),
 ):
     task = db.query(ReviewTask).filter(ReviewTask.id == id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Review task not found")
+    
+    # 1. Update the task with corrected data
+    if action.corrected_data:
+        task.extracted_fields = action.corrected_data
+    
     task.status = ReviewStatus.APPROVED
+    
+    # 2. Apply changes to the Target Record (e.g., LandParcel)
+    from app.models.land_parcel import LandParcel
+    
+    fields = task.extracted_fields
+    if task.document_type in ["girdawari", "khasra"]:
+        # Simple Upsert Logic based on Khasra Number + Village
+        khasra = fields.get("khasra_number")
+        village = fields.get("village_id") or fields.get("village")
+        
+        if khasra and village:
+            existing_parcel = db.query(LandParcel).filter(
+                LandParcel.khasra_number == khasra,
+                LandParcel.village_id == village
+            ).first()
+            
+            if existing_parcel:
+                # Update
+                existing_parcel.owner_id = fields.get("owner_name") or existing_parcel.owner_id
+                existing_parcel.area_text = fields.get("area") or existing_parcel.area_text
+                # existing_parcel.image_url = ...
+            else:
+                # Create New
+                new_parcel = LandParcel(
+                    khasra_number=khasra,
+                    village_id=village,
+                    owner_id=fields.get("owner_name"),
+                    area_text=fields.get("area"),
+                    status="verified"
+                )
+                db.add(new_parcel)
+    
     db.commit()
     db.refresh(task)
     return task

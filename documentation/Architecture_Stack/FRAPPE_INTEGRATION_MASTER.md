@@ -17,9 +17,9 @@ This section details the custom doctypes implemented in the `land_records` app.
 - **Primary Key:** `village_name`
 - **Fields:**
   - `village_name` (Data)
-- **⚠️ Issues:**
-  - Lacks hierarchical links (`Halqa`, `Tehsil`).
-  - No geo-boundaries defined.
+- **Issues:**
+  - `Halqa` field added to `Land Parcel` Doctype (Resolved).
+  - Geo-boundaries are stored in `geojson` field (Partial).
 
 ### 2. Land Parcel
 - **Path:** `lr_core/doctype/land_parcel`

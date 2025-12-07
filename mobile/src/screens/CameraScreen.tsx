@@ -15,10 +15,10 @@ let useCameraPermission: any = () => ({ hasPermission: true, requestPermission: 
 // Try to load real module, but fail silently if missing (Expo Go)
 try {
     // Note: In a real scenario, we might check Constants.appOwnership to avoid even trying this
-    // const visionCamera = require('react-native-vision-camera');
-    // Camera = visionCamera.Camera;
-    // useCameraDevice = visionCamera.useCameraDevice;
-    // useCameraPermission = visionCamera.useCameraPermission;
+    const visionCamera = require('react-native-vision-camera');
+    Camera = visionCamera.Camera;
+    useCameraDevice = visionCamera.useCameraDevice;
+    useCameraPermission = visionCamera.useCameraPermission;
 } catch (e) {
     console.warn('Vision Camera not available, using mock.');
 }
