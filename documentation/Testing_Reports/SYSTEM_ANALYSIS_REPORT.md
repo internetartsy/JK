@@ -57,7 +57,7 @@ graph TD
 - **Status**: ✅ PASS
 - **Build**: Vite build successful (Production bundle created).
 - **Linting**: Passed with minor warnings.
-- **PWA**: `manifest.json` present and valid.
+
 - **Server**: Dev server accessible at `http://localhost:5173`.
 
 ### 4. Mobile Service (`test-mobile.sh`)

@@ -28,7 +28,7 @@ sleep 5
 
 echo "✅ 6. Testing frontend endpoints..."
 curl -s http://localhost:5173 > /dev/null && echo "   ✓ Homepage accessible" || echo "   ✗ Homepage failed"
-curl -s http://localhost:5173/manifest.json > /dev/null && echo "   ✓ PWA manifest found" || echo "   ✗ PWA manifest missing"
+
 
 # Kill dev server
 kill $DEV_PID 2>/dev/null || true

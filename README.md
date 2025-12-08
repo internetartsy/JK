@@ -38,10 +38,7 @@ The JK Land Records System is designed to digitize and manage land records with 
 *   **State**: React Context + Async Storage
 *   **Sync**: Custom background sync service with conflict resolution
 
-### Frontend (Web)
-*   **Framework**: React (Vite) + TypeScript
-*   **UI Library**: TailwindCSS + Headless UI
-*   **Maps**: MapLibre GL JS
+
 
 ---
 
@@ -57,7 +54,8 @@ jk-land-records/
 │   │   └── services/       # Business Logic (OCR, Sync, Geo)
 │   ├── alembic/            # Database Migrations
 │   └── tests/              # Pytest Suite
-├── frontend/               # React Admin Dashboard
+
+├── frontend/               # React Dashboard (Rebuilt)
 ├── mobile/                 # React Native Field App
 │   ├── src/                # Mobile Source Code
 │   └── app.json            # Expo Config
@@ -109,14 +107,15 @@ npx expo start
 *   **Note**: For full native modules (MapLibre/Camera), use a Development Build or the provided mocks in Expo Go.
 
 ### 4. Run Frontend Dashboard
-Open a new terminal for the web dashboard:
-
+Open a new terminal:
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host
 ```
-Access at `http://localhost:5173`.
+Access at `http://localhost:5173` or `http://localhost:80`.
+
+
 
 ---
 
