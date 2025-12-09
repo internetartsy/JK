@@ -65,3 +65,5 @@ frappe-bench/sites/
 frappe-bench/logs/
 frappe-bench/config/
 !frappe-bench/config/pids
+!frontend/src/lib/
+local_archive/

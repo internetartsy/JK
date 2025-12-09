@@ -41,45 +41,18 @@ function AppContent() {
   const { data: stats } = useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      try {
-        // Get farmer statistics from backend
-        const farmerStatsResponse = await fetch('/api/parcels/stats/farmers', {
-          headers: {
-            'Authorization': `Bearer ${auth.user?.access_token || ''}`,
-            'Accept': 'application/json'
-          }
-        });
-        
-        if (!farmerStatsResponse.ok) {
-          throw new Error('Failed to fetch farmer stats');
-        }
-        
-        const farmerStats = await farmerStatsResponse.json();
-        
-        // Get parcel data for additional stats
-        const parcels = await parcelApi.getAll();
-        const reviews = await reviewApi.getPending();
-        
-        return {
-          totalParcels: parcels.length,
-          activeParcels: parcels.filter((p) => p.status === 'active').length,
-          disputedParcels: parcels.filter((p) => p.status === 'disputed').length,
-          totalFarmers: farmerStats.total_farmers || 0,
-          pendingReviews: reviews.length,
-          ocrAccuracy: 89, // Mock for now
-        };
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-        // Return fallback stats if endpoint fails
-        return {
-          totalParcels: 0,
-          activeParcels: 0,
-          disputedParcels: 0,
-          totalFarmers: 0,
-          pendingReviews: 0,
-          ocrAccuracy: 0,
-        };
-      }
+      // In a real app, we'd have a dedicated stats endpoint. 
+      // For now, we'll derive some stats from the parcels and reviews.
+      const parcels = await parcelApi.getAll();
+      const reviews = await reviewApi.getPending();
+      return {
+        totalParcels: parcels.length,
+        activeParcels: parcels.filter((p: any) => p.status === 'active').length,
+        disputedParcels: parcels.filter((p: any) => p.status === 'disputed').length,
+        totalFarmers: new Set(parcels.map((p: any) => p.owner_id)).size,
+        pendingReviews: reviews.length,
+        ocrAccuracy: 89, // Mock for now
+      };
     },
     initialData: {
       totalParcels: 0,
