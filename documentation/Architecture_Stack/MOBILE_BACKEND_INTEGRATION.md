@@ -30,8 +30,8 @@ const BASE_URL = Platform.select({
 ### **API Mappings**
 | Endpoint Route | Expo Usage | Backend Service | Function |
 |----------------|------------|-----------------|----------|
-| `/api/v1/parcels/` | `GET` | FastAPI (8000) | Pull data sync |
-| `/api/v1/sync/push` | `POST` | FastAPI (8000) | Upload offline changes |
+| `/api/v1/sync/changes` | `GET` | FastAPI (8000) | Delta Sync (Pull) |
+| `/api/v1/sync/batch` | `POST` | FastAPI (8000) | Batch Sync (Push) |
 | `/api/v1/geo/tiles/{z}/{x}/{y}` | `GET` | FastAPI (8000) | Map Vector Tiles |
 
 ---
