@@ -8,6 +8,7 @@ from app.models.land_parcel import LandParcel
 from app.api.deps import check_api_version, RoleChecker
 from pydantic import BaseModel
 import uuid
+import json
 
 router = APIRouter(prefix="/parcels", tags=["parcels"])
 
@@ -78,7 +79,8 @@ def list_parcels(
     if modified_since:
         query = query.filter(LandParcel.updated_at > modified_since)
     
-    parcels = query.offset(skip).limit(limit).all()
+    # Sort by most recently updated for activity feeds
+    parcels = query.order_by(LandParcel.updated_at.desc()).offset(skip).limit(limit).all()
     return [ParcelResponse.model_validate(p) for p in parcels]
 
 @router.get("/stats/farmers", response_model=dict, dependencies=[Depends(check_api_version)])
@@ -137,6 +139,49 @@ def create_parcel(parcel: ParcelCreate, db: Session = Depends(get_db)):
         print(f"Failed to sync parcel to Frappe: {e}")
         
     return db_parcel
+
+@router.get("/geojson", response_model=dict, dependencies=[Depends(check_api_version)])
+def get_parcels_geojson(
+    village_id: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Get parcels as standard GeoJSON FeatureCollection.
+    Useful for MapLibre GL JS integration.
+    """
+    query = db.query(
+        LandParcel.id, 
+        LandParcel.khasra_number, 
+        LandParcel.village_id,
+        LandParcel.status,
+        LandParcel.owner_id,
+        func.ST_AsGeoJSON(LandParcel.geometry).label("geometry")
+    )
+    
+    if village_id:
+        query = query.filter(LandParcel.village_id == village_id)
+    
+    # Only return parcels with valid geometry
+    results = query.filter(LandParcel.geometry != None).limit(5000).all()
+    
+    features = []
+    for row in results:
+        features.append({
+            "type": "Feature",
+            "properties": {
+                "id": str(row.id),
+                "khasra_number": row.khasra_number,
+                "village_id": row.village_id,
+                "status": row.status,
+                "owner_id": row.owner_id
+            },
+            "geometry": json.loads(row.geometry) if row.geometry else None
+        })
+        
+    return {
+        "type": "FeatureCollection",
+        "features": features
+    }
 
 @router.delete("/{parcel_id}", dependencies=[Depends(RoleChecker(["admin"]))])
 def delete_parcel(parcel_id: str, db: Session = Depends(get_db)):

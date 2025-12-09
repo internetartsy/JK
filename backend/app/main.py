@@ -53,6 +53,26 @@ async def metrics_middleware(request: Request, call_next):
     active_requests.inc()
     start_time = time.time()
     
+    # Security Audit Logging
+    from app.core.security.audit import log_security_event
+    
+    # Extract User ID if authenticated (mock logic for now as auth is handled by Keycloak/Gateway)
+    # in real flow, we would parse the JWT token from Authorization header here or trust the gateway's X-User-Id
+    user_id = request.headers.get("X-User-Id", "anonymous")
+    client_ip = request.client.host if request.client else "unknown"
+    
+    # Log sensitive actions (POST/PUT/DELETE)
+    if request.method in ["POST", "PUT", "DELETE", "PATCH"]:
+        log_security_event(
+            event_type=f"API_REQUEST_STARTED",
+            user_id=user_id,
+            ip_address=client_ip,
+            details={
+                "method": request.method,
+                "path": request.url.path
+            }
+        )
+
     try:
         response = await call_next(request)
         duration = time.time() - start_time
@@ -68,6 +88,20 @@ async def metrics_middleware(request: Request, call_next):
             method=request.method,
             endpoint=request.url.path
         ).observe(duration)
+        
+        # Log failures for security monitoring
+        if response.status_code >= 400:
+             log_security_event(
+                event_type=f"API_REQUEST_FAILED",
+                user_id=user_id,
+                ip_address=client_ip,
+                details={
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status_code": response.status_code,
+                    "duration_ms": round(duration * 1000, 2)
+                }
+            )
         
         return response
     finally:
