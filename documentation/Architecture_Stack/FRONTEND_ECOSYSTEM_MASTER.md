@@ -19,6 +19,7 @@ graph TD
 
     subgraph "Edge Layer"
         Nginx["Nginx Gateway (Port 80)"]
+        RustShield["🦀 Rust Geo-Shield (Security)"]
     end
 
     subgraph "Identity Provider"
@@ -47,7 +48,8 @@ graph TD
     Mobile -.->|AppAuth Redirect| KC
     
     %% Internal
-    Nginx --> API
+    Nginx --> RustShield
+    RustShield --> API
     API --> Postgres
     API --> MinIO
     API --> Redis
