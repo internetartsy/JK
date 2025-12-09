@@ -13,29 +13,29 @@ The frontend ecosystem consists of two primary client applications that interfac
 ```mermaid
 graph TD
     subgraph Clients
-        PWA[Web PWA (AgriStack Web)]
-        Mobile[Native Mobile App (Expo)]
+        PWA["Web PWA (AgriStack Web)"]
+        Mobile["Native Mobile App (Expo)"]
     end
 
     subgraph "Edge Layer"
-        Nginx[Nginx Gateway (Port 80)]
+        Nginx["Nginx Gateway (Port 80)"]
     end
 
     subgraph "Identity Provider"
-        KC[Keycloak (Port 8080)]
-        DB_KC[(Auth DB)]
+        KC["Keycloak (Port 8080)"]
+        DB_KC[("Auth DB")]
         KC --> DB_KC
     end
 
     subgraph "Core Backend"
-        API[FastAPI Backend (Port 8000)]
+        API["FastAPI Backend (Port 8000)"]
         Worker[Celery Worker]
         Redis[Redis Queue]
     end
 
     subgraph "Storage & Data"
-        Postgres[(PostGIS Database)]
-        MinIO[(MinIO Object Storage)]
+        Postgres[("PostGIS Database")]
+        MinIO[("MinIO Object Storage")]
     end
 
     %% Flows
