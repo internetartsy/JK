@@ -34,6 +34,18 @@ export interface LandParcel {
     version: number;
 }
 
+export interface FeatureCollection {
+    type: "FeatureCollection";
+    features: Array<{
+        type: "Feature";
+        properties: Record<string, unknown>;
+        geometry: {
+            type: string;
+            coordinates: unknown[];
+        };
+    }>;
+}
+
 export interface ReviewTask {
     id: string;
     document_id: string;
@@ -80,7 +92,7 @@ export const parcelApi = {
     },
 
     getGeoJSON: async (villageId?: string) => {
-        const response = await apiClient.get<any>('/parcels/geojson', {
+        const response = await apiClient.get<FeatureCollection>('/parcels/geojson', {
             params: { village_id: villageId }
         });
         return response.data;
@@ -107,7 +119,7 @@ export const reviewApi = {
         return response.data;
     },
 
-    approve: (id: string, correctedData: Record<string, any> = {}) =>
+    approve: (id: string, correctedData: Record<string, unknown> = {}) =>
         apiClient.post<ReviewTask>(`/reviews/${id}/approve`, { corrected_data: correctedData }),
 
     reject: (id: string) =>

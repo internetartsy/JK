@@ -18,12 +18,12 @@ export function MapView({
     const map = useRef<maplibregl.Map | null>(null);
     const [loaded, setLoaded] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [geoJsonData, setGeoJsonData] = useState<any>(null);
-    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [geoJsonData, setGeoJsonData] = useState<GeoJSON.FeatureCollection | null>(null);
+    const [searchResults, setSearchResults] = useState<GeoJSON.Feature[]>([]);
     const [isSearching, setIsSearching] = useState(false);
 
     // Mock GeoJSON for demo if backend is empty
-    const mockGeoJSON = {
+    const mockGeoJSON: GeoJSON.FeatureCollection = {
         type: 'FeatureCollection',
         features: [
             {
@@ -104,7 +104,7 @@ export function MapView({
             // Add parcel layer placeholder
             map.current?.addSource('parcels', {
                 type: 'geojson',
-                data: mockGeoJSON as any,
+                data: mockGeoJSON,
             });
 
             // Set initial data state mostly for search immediate availability
@@ -179,7 +179,7 @@ export function MapView({
 
             // Try to load real data
             try {
-                const geoJSON = await parcelApi.getGeoJSON();
+                const geoJSON: any = await parcelApi.getGeoJSON();
 
                 if (geoJSON && geoJSON.features && geoJSON.features.length > 0) {
                     (map.current?.getSource('parcels') as maplibregl.GeoJSONSource).setData(geoJSON);
@@ -199,7 +199,7 @@ export function MapView({
                         map.current?.fitBounds(bounds, { padding: 50 });
                     }
                 }
-            } catch (e) {
+            } catch {
                 console.warn('Could not fetch real parcels for map, using mock data');
             }
         });
@@ -208,6 +208,7 @@ export function MapView({
             map.current?.remove();
             map.current = null;
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleSearch = (query: string) => {
@@ -304,9 +305,9 @@ export function MapView({
                                     <MapPin size={14} />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-secondary-900 dark:text-white text-sm">{result.properties.owner}</p>
+                                    <p className="font-medium text-secondary-900 dark:text-white text-sm">{result.properties?.owner}</p>
                                     <p className="text-xs text-secondary-500 dark:text-secondary-400">
-                                        {result.properties.village} • Khasra: {result.properties.khasra || 'N/A'}
+                                        {result.properties?.village} • Khasra: {result.properties?.khasra || 'N/A'}
                                     </p>
                                 </div>
                             </div>

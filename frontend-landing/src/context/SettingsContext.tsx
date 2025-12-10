@@ -50,20 +50,15 @@ interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-    const [language, setLanguage] = useState<Language>('en');
-    const [theme, setTheme] = useState<Theme>('light');
+    const [language, setLanguage] = useState<Language>(() => {
+        return (localStorage.getItem('app-language') as Language) || 'en';
+    });
 
-    useEffect(() => {
-        // Load settings from local storage if available
-        const savedLang = localStorage.getItem('app-language') as Language;
-        const savedTheme = localStorage.getItem('app-theme') as Theme;
-
-        if (savedLang) setLanguage(savedLang);
-        if (savedTheme) setTheme(savedTheme);
-        else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            setTheme('dark');
-        }
-    }, []);
+    const [theme, setTheme] = useState<Theme>(() => {
+        const saved = localStorage.getItem('app-theme') as Theme;
+        if (saved) return saved;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    });
 
     useEffect(() => {
         // Apply theme

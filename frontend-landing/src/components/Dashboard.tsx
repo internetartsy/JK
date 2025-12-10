@@ -210,8 +210,17 @@ export function Dashboard() {
     );
 }
 
-function StatCard({ title, value, trend, icon: Icon, color, variants }: any) {
-    const colors: any = {
+interface StatCardProps {
+    title: string;
+    value: string;
+    trend: string;
+    icon: React.ElementType;
+    color: 'blue' | 'orange' | 'green' | 'purple';
+    variants: any;
+}
+
+function StatCard({ title, value, trend, icon: Icon, color, variants }: StatCardProps) {
+    const colors: Record<string, string> = {
         blue: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
         orange: "bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400",
         green: "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400",
