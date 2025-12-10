@@ -67,3 +67,4 @@ frappe-bench/config/
 !frappe-bench/config/pids
 !frontend/src/lib/
 local_archive/
+geo_log_data/
