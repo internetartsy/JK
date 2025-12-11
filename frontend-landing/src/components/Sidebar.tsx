@@ -24,10 +24,7 @@ export function Sidebar({ currentView, onChangeView }: SidebarProps) {
             animate={{ x: 0, opacity: 1 }}
             className="h-screen w-20 lg:w-64 bg-white/80 dark:bg-secondary-900/95 backdrop-blur-md border-r border-secondary-200 dark:border-secondary-800 flex flex-col shadow-2xl z-20 transition-colors"
         >
-            <div className="p-6 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-600 to-primary-400 shadow-lg shadow-primary-500/30 flex items-center justify-center text-white font-bold text-lg">
-                    A
-                </div>
+            <div className="p-6 flex items-center gap-3 justify-center lg:justify-start">
                 <span className="font-bold text-xl text-secondary-900 dark:text-white hidden lg:block tracking-tight">AgriStack</span>
             </div>
 
