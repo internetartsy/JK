@@ -1,13 +1,20 @@
-import { useState } from 'react';
-import { StyleSheet, Text, View, Button, Image, ScrollView, Alert, ActivityIndicator } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { OCRService } from './services/OCRService';
 import { SyncService } from './services/SyncService';
+
+// ... existing imports ...
+
+// ... inside App component return ...
+        <Text style={styles.sectionTitle}>1. OCR Capture</Text>
+        <View style={{ marginBottom: 10 }}>
+            <Button title="Scan Document (Camera)" onPress={() => setShowCamera(true)} color="#0ea5e9" />
+        </View>
+        <Button title="Pick from Gallery" onPress={pickImage} color="#64748b" />
 
 export default function App() {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState<any>(null);
+  const [showCamera, setShowCamera] = useState(false);
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -24,6 +31,16 @@ export default function App() {
       setOcrResult(null);
     }
   };
+
+  const handleCapture = (path: string) => {
+    setImage(path);
+    setShowCamera(false);
+    setOcrResult(null);
+  };
+
+  if (showCamera) {
+    return <CameraScreen onCapture={handleCapture} onClose={() => setShowCamera(false)} />;
+  }
 
   const uploadAndProcess = async () => {
     if (!image) return;

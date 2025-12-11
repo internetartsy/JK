@@ -1,0 +1,87 @@
+{
+    "realm": "agristack",
+    "enabled": true,
+    "users": [
+        {
+            "username": "officer",
+            "enabled": true,
+            "email": "officer@agristack.gov.in",
+            "firstName": "Land",
+            "lastName": "Officer",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "password",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "officer",
+                "admin"
+            ]
+        },
+        {
+            "username": "farmer",
+            "enabled": true,
+            "email": "farmer@example.com",
+            "firstName": "Ram",
+            "lastName": "Kumar",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "password",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "farmer"
+            ]
+        }
+    ],
+    "roles": {
+        "realm": [
+            {
+                "name": "officer",
+                "description": "Land Record Officer"
+            },
+            {
+                "name": "farmer",
+                "description": "Land Owner / Farmer"
+            },
+            {
+                "name": "admin",
+                "description": "System Administrator"
+            }
+        ]
+    },
+    "clients": [
+        {
+            "clientId": "agristack-frontend",
+            "enabled": true,
+            "publicClient": true,
+            "directAccessGrantsEnabled": true,
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": false,
+            "redirectUris": [
+                "http://localhost:5173/*",
+                "http://localhost:4173/*",
+                "agristack://*",
+                "exp://*"
+            ],
+            "webOrigins": [
+                "http://localhost:5173",
+                "http://localhost:4173",
+                "+"
+            ]
+        },
+        {
+            "clientId": "agristack-backend",
+            "enabled": true,
+            "publicClient": false,
+            "secret": "backend-secret",
+            "serviceAccountsEnabled": true,
+            "directAccessGrantsEnabled": false,
+            "standardFlowEnabled": false
+        }
+    ]
+}
