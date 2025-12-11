@@ -110,6 +110,61 @@ The mobile app does **not** rely on simple REST fetching for its core operations
 *   **Endpoint:** `/api/v1/sync/conflict/check`
 *   **Logic:** The app detects if the server version > local version. If so, it flags the record as `conflict` and requests a 3-way diff from the backend to present to the user.
 
+### Detailed Mobile Architecture
+
+The mobile app is built with a role-based, modular architecture to support specialized field operations.
+
+```mermaid
+graph TD
+    subgraph "Navigation & State"
+        Nav[NavigationContainer]
+        Redux[Redux Store]
+        AuthSlice[Auth Slice]
+    end
+
+    subgraph "Role-Based Stacks"
+        RoleSel[Role Selection Screen]
+        OpStack[Operator Stack]
+        VerStack[Verifier Stack]
+        TahStack[Tahsildar Stack]
+    end
+
+    subgraph "Feature Screens"
+        OpDash[Operator Dashboard]
+        Cam[Scan Document (Vision Camera)]
+        SyncUI[Offline Sync Screen]
+        Transfer[Ownership Transfer]
+    end
+
+    subgraph "Core Services"
+        Sync[SyncService (Delta)]
+        OCR[OCRService (Async)]
+        DB[SQLite Database]
+    end
+
+    %% Flow
+    Nav --> RoleSel
+    RoleSel -->|Login as Patwari| OpStack
+    RoleSel -->|Login as Girdawar| VerStack
+    
+    OpStack --> OpDash
+    OpDash --> Cam
+    OpDash --> SyncUI
+    
+    %% Data Flow
+    Cam --> OCR
+    OpDash --> Redux
+    SyncUI --> Sync
+    Sync <--> DB
+```
+
+| Component | Responsibility | Implementation Details |
+|-----------|----------------|------------------------|
+| **Navigation** | Role-based routing | `Stack.Navigator` separates flows (Operator, Verifier, Field Team). |
+| **Redux Store** | Global State | `authSlice` manages user identity and active role. |
+| **Services Layer** | logic encapsulation | Separated into `api.ts`, `sync.ts`, `ocr.ts`, `storage.ts`. |
+| **UI System** | Consistency | Shared `Colors` system and reusable `ProcessStatus` components. |
+
 ---
 
 ## 🔗 4. API & Resource Map
