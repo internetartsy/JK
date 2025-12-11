@@ -30,7 +30,7 @@ export interface LandParcel {
     khasra_number: string;
     area_text: string;
     area_geom: number;
-    status: 'active' | 'disputed' | 'inactive';
+    status: 'submitted' | 'under_review' | 'escalated' | 'rejected' | 'process_debt' | 'approved' | 'blockchain_recorded' | 'signing' | 'active' | 'disputed' | 'inactive';
     version: number;
 }
 

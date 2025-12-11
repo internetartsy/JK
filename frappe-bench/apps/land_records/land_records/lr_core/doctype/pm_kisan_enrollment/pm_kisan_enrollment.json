@@ -1,0 +1,261 @@
+{
+    "actions": [],
+    "autoname": "field:enrollment_id",
+    "creation": "2024-12-12 10:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "enrollment_section",
+        "enrollment_id",
+        "farmer_id",
+        "farmer_name",
+        "aadhaar_number",
+        "bank_section",
+        "bank_account",
+        "ifsc_code",
+        "land_details_section",
+        "total_landholding",
+        "benefit_section",
+        "annual_benefit",
+        "benefit_frequency",
+        "status_section",
+        "status",
+        "dates_section",
+        "enrollment_date",
+        "approval_date",
+        "approvals_section",
+        "verified_by",
+        "approved_by",
+        "disbursement_section",
+        "last_disbursed_date",
+        "next_disbursement_date",
+        "total_disbursed",
+        "amended_from"
+    ],
+    "fields": [
+        {
+            "fieldname": "enrollment_section",
+            "fieldtype": "Section Break",
+            "label": "Enrollment Details"
+        },
+        {
+            "fieldname": "enrollment_id",
+            "fieldtype": "Data",
+            "label": "Enrollment ID",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "farmer_id",
+            "fieldtype": "Link",
+            "label": "Farmer",
+            "options": "Farmer",
+            "reqd": 1
+        },
+        {
+            "fetch_from": "farmer_id.name_english",
+            "fieldname": "farmer_name",
+            "fieldtype": "Data",
+            "label": "Farmer Name",
+            "read_only": 1
+        },
+        {
+            "fetch_from": "farmer_id.aadhaar_hash",
+            "fieldname": "aadhaar_number",
+            "fieldtype": "Data",
+            "label": "Aadhaar Number (Hash)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "bank_section",
+            "fieldtype": "Section Break",
+            "label": "Bank Details"
+        },
+        {
+            "fieldname": "bank_account",
+            "fieldtype": "Link",
+            "label": "Bank Account",
+            "options": "Bank Account"
+        },
+        {
+            "fetch_from": "bank_account.bank_account_no",
+            "fieldname": "ifsc_code",
+            "fieldtype": "Data",
+            "label": "IFSC Code",
+            "read_only": 1
+        },
+        {
+            "fieldname": "land_details_section",
+            "fieldtype": "Section Break",
+            "label": "Land Details"
+        },
+        {
+            "fieldname": "total_landholding",
+            "fieldtype": "Float",
+            "label": "Total Landholding (Acres)",
+            "read_only": 1
+        },
+        {
+            "fieldname": "benefit_section",
+            "fieldtype": "Section Break",
+            "label": "Benefit Config"
+        },
+        {
+            "default": "6000",
+            "fieldname": "annual_benefit",
+            "fieldtype": "Currency",
+            "label": "Annual Benefit"
+        },
+        {
+            "default": "Quarterly",
+            "fieldname": "benefit_frequency",
+            "fieldtype": "Select",
+            "label": "Benefit Frequency",
+            "options": "Quarterly\nHalf-Yearly\nAnnually"
+        },
+        {
+            "fieldname": "status_section",
+            "fieldtype": "Section Break",
+            "label": "Status"
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Draft\nSubmitted\nApproved\nActive\nSuspended\nClosed"
+        },
+        {
+            "fieldname": "dates_section",
+            "fieldtype": "Section Break",
+            "label": "Important Dates"
+        },
+        {
+            "fieldname": "enrollment_date",
+            "fieldtype": "Date",
+            "label": "Enrollment Date",
+            "default": "Today"
+        },
+        {
+            "fieldname": "approval_date",
+            "fieldtype": "Date",
+            "label": "Approval Date"
+        },
+        {
+            "fieldname": "approvals_section",
+            "fieldtype": "Section Break",
+            "label": "Approvals"
+        },
+        {
+            "fieldname": "verified_by",
+            "fieldtype": "Link",
+            "label": "Verified By",
+            "options": "User"
+        },
+        {
+            "fieldname": "approved_by",
+            "fieldtype": "Link",
+            "label": "Approved By",
+            "options": "User"
+        },
+        {
+            "fieldname": "disbursement_section",
+            "fieldtype": "Section Break",
+            "label": "Disbursement Info"
+        },
+        {
+            "fieldname": "last_disbursed_date",
+            "fieldtype": "Date",
+            "label": "Last Disbursed Date"
+        },
+        {
+            "fieldname": "next_disbursement_date",
+            "fieldtype": "Date",
+            "label": "Next Disbursement Date",
+            "read_only": 1
+        },
+        {
+            "fieldname": "total_disbursed",
+            "fieldtype": "Currency",
+            "label": "Total Disbursed",
+            "read_only": 1
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "no_copy": 1,
+            "options": "PM KISAN Enrollment",
+            "print_hide": 1,
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "is_submittable": 1,
+    "links": [],
+    "modified": "2024-12-12 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "PM KISAN Enrollment",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "role": "Super Admin",
+            "create": 1,
+            "read": 1,
+            "write": 1,
+            "submit": 1,
+            "amend": 1,
+            "delete": 1,
+            "print": 1,
+            "export": 1,
+            "report": 1,
+            "share": 1
+        },
+        {
+            "role": "Operator",
+            "create": 1,
+            "read": 1,
+            "write": 1,
+            "submit": 1
+        },
+        {
+            "role": "Verifier",
+            "read": 1,
+            "write": 1
+        },
+        {
+            "role": "Tahsildar",
+            "read": 1,
+            "write": 1,
+            "amend": 1
+        },
+        {
+            "role": "Revenue Officer",
+            "read": 1,
+            "write": 1,
+            "amend": 1
+        },
+        {
+            "role": "District Admin",
+            "read": 1,
+            "write": 1
+        },
+        {
+            "role": "State Admin",
+            "read": 1,
+            "write": 1,
+            "export": 1
+        },
+        {
+            "role": "PMO",
+            "read": 1,
+            "write": 1,
+            "export": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "track_changes": 1
+}

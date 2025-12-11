@@ -112,52 +112,80 @@
     "owner": "Administrator",
     "permissions": [
         {
+            "role": "Super Admin",
             "create": 1,
+            "read": 1,
+            "write": 1,
+            "submit": 1,
+            "amend": 1,
             "delete": 1,
-            "email": 1,
-            "export": 1,
             "print": 1,
-            "read": 1,
+            "export": 1,
             "report": 1,
-            "role": "System Manager",
-            "share": 1,
-            "write": 1
+            "share": 1
         },
         {
+            "role": "Operator",
             "create": 1,
-            "delete": 1,
-            "email": 1,
-            "export": 1,
-            "print": 1,
             "read": 1,
-            "report": 1,
-            "role": "Admin",
-            "share": 1,
-            "write": 1
+            "write": 1,
+            "submit": 1,
+            "print": 1,
+            "report": 1
         },
         {
-            "create": 0,
-            "delete": 0,
-            "email": 1,
-            "export": 1,
-            "print": 1,
+            "role": "Verifier",
             "read": 1,
-            "report": 1,
-            "role": "Validator",
-            "share": 1,
-            "write": 1
+            "write": 1,
+            "print": 1,
+            "export": 1,
+            "report": 1
         },
         {
-            "create": 1,
-            "delete": 0,
-            "email": 0,
-            "export": 0,
-            "print": 0,
+            "role": "Tahsildar",
             "read": 1,
-            "report": 0,
-            "role": "Enumerator",
-            "share": 0,
-            "write": 1
+            "write": 1,
+            "amend": 1,
+            "print": 1,
+            "export": 1,
+            "report": 1
+        },
+        {
+            "role": "Revenue Officer",
+            "read": 1,
+            "write": 1,
+            "amend": 1,
+            "print": 1,
+            "export": 1,
+            "report": 1
+        },
+        {
+            "role": "District Admin",
+            "read": 1,
+            "write": 1,
+            "amend": 1,
+            "print": 1,
+            "export": 1,
+            "report": 1
+        },
+        {
+            "role": "State Admin",
+            "read": 1,
+            "print": 1,
+            "export": 1,
+            "report": 1
+        },
+        {
+            "role": "PMO",
+            "read": 1,
+            "print": 1,
+            "export": 1,
+            "report": 1
+        },
+        {
+            "role": "Guest",
+            "read": 1,
+            "report": 1
         }
     ],
     "sort_field": "modified",

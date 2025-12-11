@@ -1,0 +1,151 @@
+{
+    "actions": [],
+    "autoname": "field:lease_id",
+    "creation": "2024-12-12 10:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "lease_id",
+        "plot_id",
+        "landlord",
+        "tenant",
+        "start_date",
+        "end_date",
+        "rent_amount",
+        "payment_frequency",
+        "status",
+        "amended_from"
+    ],
+    "fields": [
+        {
+            "fieldname": "lease_id",
+            "fieldtype": "Data",
+            "label": "Lease ID",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "plot_id",
+            "fieldtype": "Link",
+            "label": "Plot ID",
+            "options": "Land Parcel",
+            "reqd": 1
+        },
+        {
+            "fieldname": "landlord",
+            "fieldtype": "Link",
+            "label": "Landlord",
+            "options": "Farmer",
+            "reqd": 1
+        },
+        {
+            "fieldname": "tenant",
+            "fieldtype": "Link",
+            "label": "Tenant",
+            "options": "Farmer",
+            "reqd": 1
+        },
+        {
+            "fieldname": "start_date",
+            "fieldtype": "Date",
+            "label": "Start Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "end_date",
+            "fieldtype": "Date",
+            "label": "End Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "rent_amount",
+            "fieldtype": "Currency",
+            "label": "Rent Amount"
+        },
+        {
+            "default": "Monthly",
+            "fieldname": "payment_frequency",
+            "fieldtype": "Select",
+            "label": "Payment Frequency",
+            "options": "Monthly\nQuarterly\nAnnually"
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Draft\nActive\nTerminated\nExpired"
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "no_copy": 1,
+            "options": "Lease Agreement",
+            "print_hide": 1,
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "is_submittable": 1,
+    "links": [],
+    "modified": "2024-12-12 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Lease Agreement",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "read": 1,
+            "write": 1,
+            "submit": 1,
+            "role": "Operator"
+        },
+        {
+            "read": 1,
+            "write": 1,
+            "role": "Verifier"
+        },
+        {
+            "read": 1,
+            "write": 1,
+            "submit": 1,
+            "role": "Tahsildar"
+        },
+        {
+            "read": 1,
+            "write": 1,
+            "role": "Revenue Officer"
+        },
+        {
+            "read": 1,
+            "write": 1,
+            "role": "District Admin"
+        },
+        {
+            "read": 1,
+            "role": "State Admin"
+        },
+        {
+            "read": 1,
+            "role": "PMO Officer"
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "write": 1,
+            "submit": 1,
+            "amend": 1,
+            "report": 1,
+            "export": 1,
+            "print": 1,
+            "role": "Super Admin"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "track_changes": 1
+}

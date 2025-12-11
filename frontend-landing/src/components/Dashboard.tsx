@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Users, FileCheck, AlertTriangle, Activity, UploadCloud, Map, CheckCircle2, Clock } from 'lucide-react';
+import { ArrowUpRight, Users, FileCheck, AlertTriangle, Activity, UploadCloud, Map, CheckCircle2, Clock, AlertCircle, Hourglass, Gavel, ShieldCheck, PenTool, Link2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { parcelApi, reviewApi, type DashboardStats, type LandParcel } from '../api/client';
 import { useAuth } from 'react-oidc-context';
@@ -60,6 +60,33 @@ export function Dashboard() {
     const itemVariants = {
         hidden: { y: 20, opacity: 0 },
         show: { y: 0, opacity: 1 }
+    };
+
+    const getStatusConfig = (status: string) => {
+        switch (status) {
+            case 'submitted':
+                return { color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', icon: FileCheck, label: 'Submitted' };
+            case 'under_review':
+                return { color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300', icon: Hourglass, label: 'Under Review' };
+            case 'escalated':
+                return { color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300', icon: Gavel, label: 'Escalated' };
+            case 'rejected':
+                return { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', icon: AlertCircle, label: 'Rejected' };
+            case 'process_debt':
+                return { color: 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300', icon: AlertTriangle, label: 'Process Debt' };
+            case 'approved':
+                return { color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', icon: ShieldCheck, label: 'Approved' };
+            case 'blockchain_recorded':
+                return { color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300', icon: Link2, label: 'On-Chain' };
+            case 'signing':
+                return { color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300', icon: PenTool, label: 'Signing' };
+            case 'active':
+                return { color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2, label: 'Active' };
+            case 'disputed':
+                return { color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400', icon: AlertTriangle, label: 'Disputed' };
+            default:
+                return { color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', icon: Clock, label: status };
+        }
     };
 
     return (
@@ -208,24 +235,31 @@ export function Dashboard() {
 
                         <div className="space-y-4">
                             {recentParcels.length > 0 ? (
-                                recentParcels.map((p, idx) => (
-                                    <div key={p.id || idx} className="flex items-start gap-4 p-3 rounded-xl hover:bg-white/50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${p.status === 'active'
-                                            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                                            : 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400'
-                                            }`}>
-                                            {p.status === 'active' ? <CheckCircle2 size={18} /> : <AlertTriangle size={18} />}
+                                recentParcels.map((p, idx) => {
+                                    const statusConfig = getStatusConfig(p.status);
+                                    const StatusIcon = statusConfig.icon;
+
+                                    return (
+                                        <div key={p.id || idx} className="flex items-start gap-4 p-3 rounded-xl hover:bg-white/50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group">
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${statusConfig.color}`}>
+                                                <StatusIcon size={18} />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 transition-colors leading-tight">
+                                                    Parcel #{p.khasra_number}
+                                                </p>
+                                                <div className="flex flex-wrap gap-2 mt-1">
+                                                    <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${statusConfig.color} bg-opacity-20`}>
+                                                        {statusConfig.label}
+                                                    </span>
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {idx * 5 + 2}m ago
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 transition-colors">
-                                                Parcel #{p.khasra_number} <span className="text-gray-400 font-normal">updated</span>
-                                            </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                                                Synced via mobile • {idx * 5 + 2}m ago
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             ) : (
                                 <div className="text-center py-8 text-gray-500 text-sm">Waiting for updates...</div>
                             )}
