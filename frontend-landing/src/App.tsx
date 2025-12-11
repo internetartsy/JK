@@ -7,12 +7,17 @@ import { Registry } from './components/Registry';
 import { ReviewQueue } from './components/ReviewQueue';
 import { MapView } from './components/MapView';
 import { Settings } from './components/Settings';
+import { LandingPage } from './components/LandingPage';
 
 import { SettingsProvider } from './context/SettingsContext';
 
 function App() {
   const auth = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
+
+  // DEBUG: Bypass auth if ?debug=true
+  const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
+  const isAuthenticated = auth.isAuthenticated || isDebug;
 
   useEffect(() => {
     if (auth.isAuthenticated && auth.user?.access_token) {
@@ -26,6 +31,10 @@ function App() {
     return <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
     </div>
+  }
+
+  if (!isAuthenticated) {
+    return <LandingPage />;
   }
 
   return (

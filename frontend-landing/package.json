@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.4.2",
+    "@types/three": "^0.182.0",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.25",
@@ -21,6 +24,7 @@
     "react-dom": "^19.2.0",
     "react-oidc-context": "^3.3.0",
     "tailwind-merge": "^3.4.0",
+    "three": "^0.182.0",
     "vite-plugin-pwa": "^1.2.0",
     "workbox-window": "^7.4.0"
   },
