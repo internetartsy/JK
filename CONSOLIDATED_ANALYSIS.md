@@ -124,6 +124,11 @@ graph TB
         DISPUTE["Dispute<br/>Management"]
         FARMER["Farmer Master<br/>Service"]
         OWNERSHIP["Ownership Transfer<br/>Service"]
+        DEBT["Process Debt<br/>Service"]
+        SPATIAL["Spatial Analysis<br/>Service"]
+        SYNC["Offline Sync<br/>Service"]
+        FILES["File Storage<br/>Service"]
+        HOOKS["Webhook<br/>Handler"]
     end
 
     subgraph "ERPNext (Frappe)"
@@ -166,6 +171,11 @@ graph TB
     GATEWAY --> DISPUTE
     GATEWAY --> FARMER
     GATEWAY --> OWNERSHIP
+    GATEWAY --> DEBT
+    GATEWAY --> SPATIAL
+    GATEWAY --> SYNC
+    GATEWAY --> FILES
+    GATEWAY --> HOOKS
 
     OCR --> PG
     TRANS --> PG
@@ -174,6 +184,9 @@ graph TB
     DISPUTE --> PG
     FARMER --> PG
     OWNERSHIP --> PG
+    DEBT --> PG
+    SPATIAL --> PG
+    SYNC --> PG
 
     FARMER --> PM_KISAN
     FARMER --> PMFBY
