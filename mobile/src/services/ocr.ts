@@ -1,4 +1,4 @@
-import client from '../api/client';
+import client from './api';
 import * as FileSystem from 'expo-file-system';
 import { Platform } from 'react-native';
 

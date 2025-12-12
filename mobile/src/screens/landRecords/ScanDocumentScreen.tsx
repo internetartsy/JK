@@ -39,7 +39,17 @@ export function CameraScreen({ onCapture, onClose }: CameraScreenProps) {
     }
 
     if (device == null) {
-        return <View style={styles.container}><ActivityIndicator size="large" /></View>;
+        return (
+            <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: 'white', marginBottom: 20 }}>Camera not available (Simulator)</Text>
+                <TouchableOpacity style={styles.captureBtn} onPress={() => onCapture('mock-file://simulated_scan.jpg')}>
+                    <View style={styles.captureBtnInner} />
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.closeBtn, { marginTop: 20 }]} onPress={onClose}>
+                    <Text style={styles.btnText}>Cancel</Text>
+                </TouchableOpacity>
+            </View>
+        );
     }
 
     return (
