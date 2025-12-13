@@ -1,25 +1,50 @@
 # Frontend Architecture (Web)
 
 ## 1. Scope & Responsibility
-Web Dashboard for Verifiers and Operators.
+React-based Dashboard for Verifiers and Operators.
+*   **Role**: UI for Review, Geo-Visualization, and Analytics.
+*   **Tech Stack**: Vite + React + Tailwind + Recharts + MapLibre.
 
-## 2. Architecture: Dev Proxy (As-Is)
+## 2. Architecture: Component Tree
 ```mermaid
-graph LR
-    UI[React App] -->|/api proxy| VITE[Vite :5173]
-    VITE -->|Forward| API[Backend :8000]
-    UI -->|Auth| KEY[Keycloak :8080]
+graph TD
+    App -->|Route| Dashboard
+    App -->|Route| ReviewQueue
+    App -->|Route| MapViewer
+    
+    Dashboard --> StatGrid
+    Dashboard --> SyncChart[Recharts Graph]
+    Dashboard --> RecentActivity
+    
+    ReviewQueue --> SplitView
+    SplitView --> OCRImage[Canvas Overlay]
+    SplitView --> FormEditor
 ```
 
-## 3. Endpoints & Ports
-*   **Port**: `5173` (Dev), `:80` (Prod)
-*   **Endpoints**: Consumes `/parcels/*`, `/reviews/*`.
+## 3. Logical Functions & State
+### 3.1 Dashboard (`Dashboard.tsx`)
+*   **Stats Fetching**: Aggregates data from `parcelApi.getStats()` and `reviewApi.getPending()`.
+*   **Visualization**: Renders real-time sync activity using SVG paths (Waveform).
+*   **Recent Updates**: Polling list of recent Parcel modifications.
 
-## 4. Credentials (Dev)
-*   **URL**: `http://localhost:5173`
-*   **User**: `admin`
-*   **Password**: `admin` (Keycloak Login)
+### 3.2 Review Logic (`ReviewDashboard.tsx`)
+*   **Input**: JSON List of `ReviewTask` (Pending).
+*   **Action**: User approves/edits -> `PATCH /api/v1/reviews/{id}`.
+*   **Output**: Updates Status -> 'Approved' -> Triggers DB Sync.
 
-## 5. Code & Scripts
-*   **Code**: `frontend-landing/src/`
-*   **Script**: `npm run dev`
+## 4. Endpoints & Ports
+*   **Port**: `5173` (Development)
+*   **Target API**: `http://localhost:8090` (Security Gateway) or `8000` (Direct).
+
+## 5. Directory Structure
+```
+frontend-landing/src/
+├── components/
+│   ├── Dashboard.tsx       # Main Stats View
+│   ├── ReviewQueue.tsx     # Review UI
+│   ├── MapView.tsx         # GIS Layer
+├── api/
+│   ├── client.ts           # Axios Instance
+└── constants/
+    └── translations.ts     # Localization
+```
