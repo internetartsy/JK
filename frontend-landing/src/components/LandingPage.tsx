@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Hero3D } from './Hero3D';
 import { useAuth } from 'react-oidc-context';
-import { User, Lock, FileCheck, ShieldCheck, Tractor, RefreshCw } from 'lucide-react';
+import { User, Lock, FileCheck, ShieldCheck, Tractor, RefreshCw, Menu, X } from 'lucide-react';
 
 import { EnrollmentStatus } from './EnrollmentStatus';
 import { ForgotPassword } from './ForgotPassword';
@@ -12,6 +12,7 @@ export function LandingPage() {
     const [userType, setUserType] = useState<'farmer' | 'official'>('official');
     const [viewMode, setViewMode] = useState<'login' | 'status' | 'forgot'>('login');
     const [captcha, setCaptcha] = useState('');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const generateCaptcha = () => {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -52,11 +53,20 @@ export function LandingPage() {
             </div>
 
             {/* Navbar */}
-            <nav className="relative z-20 container mx-auto px-6 py-6 flex justify-between items-center">
+            <nav className="relative z-50 container mx-auto px-6 py-6 flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                    <img src="/logo.png" alt="AgriStack" className="h-12 w-auto object-contain brightness-0 invert" />
+                    {/* AgriStack Brand Logo */}
+                    <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-2 rounded-lg shadow-lg shadow-primary-500/20 border border-white/10">
+                            <Tractor className="text-white h-6 w-6" strokeWidth={2.5} />
+                        </div>
+                        <span className="text-2xl font-bold tracking-tight text-white">
+                            AgriStack
+                        </span>
+                    </div>
+
                     <div className="h-8 w-px bg-white/20"></div>
-                    <div className="bg-white rounded py-1 px-2 flex items-center justify-center">
+                    <div className="bg-white rounded-md py-1 px-2 flex items-center justify-center shadow-lg">
                         <img
                             src="/nic_logo.png"
                             alt="NIC"
@@ -64,12 +74,50 @@ export function LandingPage() {
                         />
                     </div>
                 </div>
+
+                {/* Desktop Nav */}
                 <div className="hidden md:flex items-center space-x-6">
-                    <button onClick={() => window.location.href = '/?debug=true'} className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Dashboard</button>
+
                     <button onClick={() => setViewMode('status')} className="text-sm font-medium text-primary-400 hover:text-white transition-colors">Check Enrollment Status</button>
                     <a href="#" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Check Jansamarth KCC Status</a>
                 </div>
+
+                {/* Mobile Menu Toggle */}
+                <button
+                    className="md:hidden text-gray-300 hover:text-white p-2"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
             </nav>
+
+            {/* Mobile Nav Overlay */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden fixed inset-x-0 top-[88px] z-40 bg-slate-900/95 backdrop-blur-xl border-b border-white/10"
+                    >
+                        <div className="container mx-auto px-6 py-8 flex flex-col space-y-6">
+
+                            <button
+                                onClick={() => { setIsMobileMenuOpen(false); setViewMode('status'); }}
+                                className="text-lg font-medium text-primary-400 hover:text-white transition-colors text-left"
+                            >
+                                Check Enrollment Status
+                            </button>
+                            <a
+                                href="#"
+                                className="text-lg font-medium text-gray-300 hover:text-white transition-colors text-left"
+                            >
+                                Check Jansamarth KCC Status
+                            </a>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Main Content Split */}
             <div className="relative z-10 container mx-auto px-6 pt-10 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-100px)]">

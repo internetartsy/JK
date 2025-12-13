@@ -5,7 +5,7 @@ import './index.css'
 import App from './App.tsx'
 
 const oidcConfig = {
-  authority: "http://localhost:8080/realms/agristack",
+  authority: "http://localhost:8180/realms/agristack",
   client_id: "agristack-frontend",
   redirect_uri: window.location.origin,
   onSigninCallback: () => {

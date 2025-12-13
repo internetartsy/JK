@@ -6,8 +6,10 @@
     "engine": "InnoDB",
     "field_order": [
         "parcel_id",
+        "ulpin",
         "village_id",
         "khasra_number",
+        "landmark",
         "area_text",
         "area_geom",
         "status",
@@ -29,6 +31,12 @@
             "reqd": 1
         },
         {
+            "fieldname": "ulpin",
+            "fieldtype": "Data",
+            "label": "ULPIN",
+            "unique": 1
+        },
+        {
             "fieldname": "village_id",
             "fieldtype": "Data",
             "label": "Village ID"
@@ -37,6 +45,11 @@
             "fieldname": "khasra_number",
             "fieldtype": "Data",
             "label": "Khasra Number"
+        },
+        {
+            "fieldname": "landmark",
+            "fieldtype": "Data",
+            "label": "Landmark"
         },
         {
             "fieldname": "area_text",

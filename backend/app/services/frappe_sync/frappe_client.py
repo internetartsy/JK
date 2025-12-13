@@ -83,11 +83,25 @@ class FrappeClient:
     
     def create_review_task(self, doc_id: str, doc_type: str, confidence: float, fields: Dict[str, Any]) -> Dict[str, Any]:
         """Create a ReviewTask in Frappe for low-confidence records"""
-        data = {
-            "document_id": doc_id,
-            "document_type": doc_type,
-            "confidence_score": confidence,
-            "extracted_fields": fields,
             "status": "Pending"
         }
         return self.create_doc("Review Task", data)
+
+    def attach_file(self, doctype: str, docname: str, file_content: bytes, filename: str, is_private: int = 1) -> Dict[str, Any]:
+        """Attach a file to a Frappe Document"""
+        url = f"{self.base_url}/api/method/upload_file"
+        try:
+            # Prepare multipart upload
+            files = {'file': (filename, file_content)}
+            data = {
+                'doctype': doctype,
+                'docname': docname,
+                'is_private': is_private
+            }
+            
+            response = self.session.post(url, files=files, data=data)
+            response.raise_for_status()
+            return response.json().get("message", {})
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error attaching file to {doctype} {docname}: {e}")
+            return {"error": str(e)}

@@ -48,8 +48,34 @@ def approve_review(
     
     # 2. Apply changes to the Target Record (e.g., LandParcel)
     from app.models.land_parcel import LandParcel
+    from app.models.person import Person
     
     fields = task.extracted_fields
+    
+    # Handle Person/Farmer Creation
+    owner_name = fields.get("owner_name")
+    person_id = None
+    
+    if owner_name:
+        # Check if person exists (Exact match on Urdu name for now)
+        # In production, use Entity Resolution service
+        person = db.query(Person).filter(Person.name_urdu == owner_name).first()
+        if not person:
+            person = Person(
+                name_urdu=owner_name,
+                confidence=task.confidence_score,
+                dispute_status="clear"
+            )
+            db.add(person)
+            db.flush() # Get ID
+            
+            # Sync to Frappe immediately
+            # from app.services.frappe_sync.sync_service import FrappeSyncService
+            # sync_svc = FrappeSyncService()
+            # sync_svc.sync_person_to_frappe(person)
+        
+        person_id = str(person.id)
+
     if task.document_type in ["girdawari", "khasra"]:
         # Simple Upsert Logic based on Khasra Number + Village
         khasra = fields.get("khasra_number")
@@ -63,7 +89,8 @@ def approve_review(
             
             if existing_parcel:
                 # Update
-                existing_parcel.owner_id = fields.get("owner_name") or existing_parcel.owner_id
+                if person_id:
+                    existing_parcel.owner_id = person_id
                 existing_parcel.area_text = fields.get("area") or existing_parcel.area_text
                 # existing_parcel.image_url = ...
             else:
@@ -71,7 +98,7 @@ def approve_review(
                 new_parcel = LandParcel(
                     khasra_number=khasra,
                     village_id=village,
-                    owner_id=fields.get("owner_name"),
+                    owner_id=person_id or fields.get("owner_name"), # Fallback to string if logic fails
                     area_text=fields.get("area"),
                     status="verified"
                 )

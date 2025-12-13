@@ -1,5 +1,6 @@
-use actix_web::{web, App, HttpServer, HttpResponse, Responder, HttpRequest, middleware};
-use actix_web::http::StatusCode;
+use actix_web::{web, App, HttpServer, HttpResponse, Responder, HttpRequest, middleware as actix_middleware, Error};
+mod middleware;
+
 use log::{info, warn, error};
 use std::env;
 use sqlx::postgres::PgPoolOptions;
@@ -7,6 +8,7 @@ use sqlx::{Pool, Postgres};
 
 struct AppState {
     db: Pool<Postgres>,
+    client: reqwest::Client,
 }
 
 async fn health_check() -> impl Responder {
@@ -33,30 +35,68 @@ async fn db_check(data: web::Data<AppState>) -> impl Responder {
     }
 }
 
-async fn proxy_handler(req: HttpRequest, _body: web::Bytes) -> impl Responder {
+async fn proxy_handler(req: HttpRequest, body: web::Bytes, data: web::Data<AppState>) -> Result<HttpResponse, Error> {
     let path = req.path();
-    let method = req.method().as_str();
+    let method = req.method().clone();
     
-    let target_service = if path.starts_with("/app") || path.starts_with("/assets") || path.starts_with("/files") {
-        "Frappe (ERPNext) at port 8001"
-    } else if path.starts_with("/api/v1/ocr") {
-        "FastAPI (OCR Engine) at port 8000 [Compute Intensive]"
-    } else if path.starts_with("/api") {
-        "FastAPI (Core Backend) at port 8000"
+    // Determine target service
+    let target_base = if path.starts_with("/api/v1") {
+        env::var("BACKEND_URL").unwrap_or_else(|_| "http://backend:8000".to_string())
+    } else if path.starts_with("/app") || path.starts_with("/assets") || path.starts_with("/files") || path.starts_with("/api") {
+       env::var("FRAPPE_URL").unwrap_or_else(|_| "http://frappe:8000".to_string())
     } else {
-        "Unknown/Blocked"
+        // Default to frontend for all other routes
+       env::var("FRONTEND_URL").unwrap_or_else(|_| "http://frontend:3000".to_string())
     };
 
-    info!("Request: {} {} -> Routing to {}", method, path, target_service);
+    let target_url = format!("{}{}", target_base, path);
+    // Append query string if present
+    let target_url = if let Some(qs) = req.query_string().is_empty().then(|| "").or(Some(req.query_string())) {
+        if !qs.is_empty() {
+             format!("{}?{}", target_url, qs)
+        } else {
+            target_url
+        }
+    } else {
+        target_url
+    };
 
-    HttpResponse::Ok().json(serde_json::json!({
-        "message": "Request passed GeoShield Security Gateway",
-        "routing_decision": {
-            "path": path,
-            "target": target_service
+    info!("Proxying {} {} -> {}", method, path, target_url);
+
+    // Forward Request using reqwest
+    let mut request_builder = data.client.request(method.clone(), &target_url);
+    
+    // Copy headers (excluding host to avoid confusion)
+    for (key, value) in req.headers() {
+        if key != "host" && key != "content-length" {
+             request_builder = request_builder.header(key, value);
+        }
+    }
+    
+    request_builder = request_builder.body(body.to_vec());
+
+    match request_builder.send().await {
+        Ok(resp) => {
+            let status = resp.status();
+            let mut client_resp = HttpResponse::build(status);
+            
+            // Copy response headers
+            for (key, value) in resp.headers() {
+                 client_resp.append_header((key, value));
+            }
+            
+            let bytes = resp.bytes().await.map_err(|e| {
+                error!("Failed to read response bytes: {}", e);
+                actix_web::error::ErrorInternalServerError(e)
+            })?;
+            
+            Ok(client_resp.body(bytes))
         },
-        "status": "forwarded (mock)"
-    }))
+        Err(e) => {
+            error!("Proxy request failed: {}", e);
+            Ok(HttpResponse::BadGateway().body(format!("Service unavailable: {}", e)))
+        }
+    }
 }
 
 #[actix_web::main]
@@ -72,19 +112,26 @@ async fn main() -> std::io::Result<()> {
         .max_connections(5)
         .connect(&database_url)
         .await
-        .expect("Failed to create pool");
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
     
     info!("✅ Connected to PostGIS");
 
     let port = 8090;
     info!("🛡️  GeoShield Security Gateway starting on port {}", port);
+    
+    let client = reqwest::Client::new();
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(AppState {
                 db: pool.clone(),
+                client: client.clone(),
             }))
-            .wrap(middleware::Logger::default())
+            .wrap(actix_middleware::Logger::default())
+            .wrap(middleware::headers::SecurityHeaders)
+            .wrap(middleware::ratelimit::RateLimit)
+            .wrap(middleware::audit::AuditLog)
+            .wrap(middleware::auth::Authentication)
             .route("/health", web::get().to(health_check))
             .route("/db-check", web::get().to(db_check))
             .default_service(web::to(proxy_handler))

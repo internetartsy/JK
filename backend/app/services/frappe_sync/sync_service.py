@@ -76,7 +76,9 @@ class FrappeSyncService:
         overall_confidence: float,
         is_handwritten: bool = False,
         has_tables: bool = False,
-        table_confidence: Optional[float] = None
+        table_confidence: Optional[float] = None,
+        file_content: Optional[bytes] = None,
+        file_name: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Analyze extraction confidence and route to appropriate review workflow
@@ -123,13 +125,84 @@ class FrappeSyncService:
                 f"Created review task for {doc_type} {doc_id} "
                 f"with priority {analysis['priority'].value}"
             )
+            
+            # Attach file to Review Task if available
+            if file_content and file_name and result["review_task_id"]:
+                self.client.attach_file("Review Task", result["review_task_id"], file_content, file_name)
+                logger.info(f"Attached source file to Review Task {result['review_task_id']}")
         else:
             logger.info(
                 f"No review needed for {doc_type} {doc_id} "
                 f"(confidence: {overall_confidence:.2f})"
             )
-        
-        return result
+            
+            # Auto-save to Frappe if high confidence
+            if doc_type == "girdawari":
+                try:
+                    # Map OCR fields to Land Parcel schema
+                    # Use doc_id as temporary ID, or generate ULPIN if backend logic permits
+                    # Generate or extract ULPIN
+                    ulpin = fields.get("ulpin")
+                    if not ulpin:
+                         # Generate provisional ULPIN
+                         ulpin = f"JK-G-{doc_id[-6:]}".upper()
+
+                    # 1. Create/Link Farmer (Owner)
+                    # Extract names and handle translation (assumes OCR provides _en/_ur variants or raw)
+                    owner_name_raw = fields.get("owner_name", "Unknown")
+                    father_name = fields.get("father_name", "Unknown")
+                    
+                    # Provisional Farmer Data
+                    farmer_data = {
+                        "name_english": fields.get("owner_name_en", owner_name_raw), # OCR should provide English
+                        "name_urdu": fields.get("owner_name_ur", owner_name_raw),   # OCR should provide Urdu
+                        "father_name": father_name,
+                        # Generate deterministic ID or let Frappe handle naming
+                    }
+                    
+                    farmer_id = None
+                    try:
+                        # Try to create Farmer doc
+                        # In real prod, check for duplicates first!
+                        farmer_res = self.client.create_doc("Farmer", farmer_data)
+                        farmer_id = farmer_res.get("name")
+                        logger.info(f"Auto-created Farmer {farmer_id} for {owner_name_raw}")
+                    except Exception as fe:
+                        logger.warn(f"Could not create farmer: {fe}")
+
+                    # 2. Create Land Parcel
+                    land_data = {
+                        "parcel_id": doc_id, 
+                        "ulpin": ulpin,
+                        "farmer_id": farmer_id, # Link the created farmer
+                        "village_id": fields.get("village", fields.get("village_id", "Unknown")),
+                        "khasra_number": fields.get("khasra_number", "Unknown"),
+                        "area_text": fields.get("area", fields.get("area_text", "")),
+                        "status": "Under Review", 
+                        "owner_name": owner_name_raw, # Display name
+                        "father_name": father_name,
+                        "document_date": fields.get("date", ""),
+                        "is_digitized_via_ocr": 1,
+                        "source_doc_id": doc_id,
+                        # GeoJSON mapping if coordinates exist in extraction
+                        "geojson": fields.get("geojson", fields.get("coordinates", None)) 
+                    }
+                    
+                    save_result = self.client.create_doc("Land Parcel", land_data)
+                    result["record_created"] = True
+                    result["record_id"] = save_result.get("name") # Frappe returns name/id
+                    result["record_id"] = save_result.get("name") # Frappe returns name/id
+                    logger.info(f"Auto-created Land Parcel {result['record_id']} in Frappe")
+                    
+                    # Attach file to Land Parcel if available
+                    if file_content and file_name and result.get("record_id"):
+                        self.client.attach_file("Land Parcel", result["record_id"], file_content, file_name)
+                        logger.info(f"Attached source file to Land Parcel {result['record_id']}")
+                    
+                except Exception as e:
+                    logger.error(f"Failed to auto-create Land Parcel in Frappe: {e}")
+                    result["record_created"] = False
+                    result["error"] = str(e)
     
     def create_review_task_with_priority(
         self,

@@ -1,14 +1,14 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import {
     AlertCircle,
     Clock,
-    CheckCircle,
-    Info,
     AlertTriangle,
+    CheckCircle2,
     Gavel,
-    Link,
+    Link2,
     PenTool,
+    Info,
     LucideIcon
 } from 'lucide-react-native';
 
@@ -21,127 +21,84 @@ interface ActionButton {
 
 interface ProcessStatusProps {
     transferId: string;
-    status: string; // e.g., "PENDING_TAHSILDAR"
+    status: string;
     color: StatusColor;
-    icon?: string; // Optional override, otherwise derived from color
+    icon: string;
     text: string;
     timeline?: string;
     actions?: ActionButton[];
-    style?: StyleProp<ViewStyle>;
 }
 
-// Configuration for each status type
-const STATUS_CONFIG: Record<StatusColor, { bg: string; text: string; icon: LucideIcon; border: string }> = {
-    BLUE: {
-        bg: '#eff6ff', // blue-50
-        text: '#1e40af', // blue-800
-        border: '#bfdbfe', // blue-200
-        icon: Info
-    },
-    YELLOW: {
-        bg: '#fefce8', // yellow-50
-        text: '#854d0e', // yellow-800
-        border: '#fde68a', // yellow-200
-        icon: Clock
-    },
-    RED: {
-        bg: '#fef2f2', // red-50
-        text: '#991b1b', // red-800
-        border: '#fecaca', // red-200
-        icon: AlertCircle
-    },
-    BLACK: {
-        bg: '#18181b', // zinc-900 (Black-ish)
-        text: '#f4f4f5', // zinc-100 (White text)
-        border: '#3f3f46',
-        icon: AlertTriangle
-    },
-    GREEN: {
-        bg: '#f0fdf4', // green-50
-        text: '#166534', // green-800
-        border: '#bbf7d0', // green-200
-        icon: CheckCircle
-    },
-    ORANGE: {
-        bg: '#fff7ed', // orange-50
-        text: '#9a3412', // orange-800
-        border: '#fed7aa', // orange-200
-        icon: Gavel
-    },
-    PURPLE: {
-        bg: '#faf5ff', // purple-50
-        text: '#6b21a8', // purple-800
-        border: '#e9d5ff', // purple-200
-        icon: Link
-    },
-    LIGHT_BLUE: {
-        bg: '#f0f9ff', // sky-50
-        text: '#075985', // sky-800
-        border: '#bae6fd', // sky-200
-        icon: PenTool
-    }
+const ICON_MAP: Record<string, LucideIcon> = {
+    AlertCircle: AlertCircle,
+    Clock: Clock,
+    AlertTriangle: AlertTriangle,
+    CheckCircle2: CheckCircle2,
+    Gavel: Gavel,
+    Link2: Link2,
+    PenTool: PenTool,
+    Info: Info,
+};
+
+const COLOR_CONFIG: Record<StatusColor, { bg: string; text: string; iconColor: string; border: string }> = {
+    BLUE: { bg: '#EFF6FF', text: '#1E40AF', iconColor: '#2563EB', border: '#DBEAFE' },
+    YELLOW: { bg: '#FEFCE8', text: '#854D0E', iconColor: '#CA8A04', border: '#FEF9C3' },
+    RED: { bg: '#FEF2F2', text: '#991B1B', iconColor: '#DC2626', border: '#FEE2E2' },
+    BLACK: { bg: '#111827', text: '#F3F4F6', iconColor: '#F87171', border: '#374151' }, // High contrast for critical
+    GREEN: { bg: '#F0FDF4', text: '#166534', iconColor: '#16A34A', border: '#DCFCE7' },
+    ORANGE: { bg: '#FFF7ED', text: '#9A3412', iconColor: '#EA580C', border: '#FFEDD5' },
+    PURPLE: { bg: '#FAF5FF', text: '#6B21A8', iconColor: '#9333EA', border: '#F3E8FF' },
+    LIGHT_BLUE: { bg: '#F0F9FF', text: '#075985', iconColor: '#0EA5E9', border: '#E0F2FE' },
 };
 
 export const ProcessStatus = ({
     transferId,
     status,
     color,
+    icon,
     text,
     timeline,
-    actions = [],
-    style
+    actions
 }: ProcessStatusProps) => {
-
-    const config = STATUS_CONFIG[color] || STATUS_CONFIG.BLUE;
-    const IconComponent = config.icon;
+    const styles = getStyles(COLOR_CONFIG[color]);
+    const IconComponent = ICON_MAP[icon] || Info;
+    const theme = COLOR_CONFIG[color];
 
     return (
-        <View style={[
-            styles.container,
-            { backgroundColor: config.bg, borderColor: config.border },
-            style
-        ]}>
-            {/* Header Section */}
+        <View style={styles.container}>
+            {/* Header with ID and Icon */}
             <View style={styles.header}>
                 <View style={styles.iconContainer}>
-                    <IconComponent size={24} color={config.text} />
+                    <IconComponent size={24} color={theme.iconColor} />
                 </View>
-                <View style={styles.headerText}>
-                    <Text style={[styles.statusLabel, { color: config.text }]}>{status.replace('_', ' ')}</Text>
-                    <Text style={[styles.transferId, { color: config.text, opacity: 0.8 }]}>{transferId}</Text>
+                <View style={styles.titleContainer}>
+                    <Text style={styles.transferId}>{transferId}</Text>
+                    <Text style={styles.statusLabel}>{status.replace(/_/g, ' ')}</Text>
                 </View>
             </View>
 
-            {/* Message Body */}
-            <View style={styles.body}>
-                <Text style={[styles.messageText, { color: config.text }]}>
-                    {text}
-                </Text>
-                {timeline && (
-                    <Text style={[styles.timelineText, { color: config.text, opacity: 0.7 }]}>
-                        {timeline}
-                    </Text>
-                )}
-            </View>
+            {/* Main Message */}
+            <Text style={styles.mainText}>{text}</Text>
+
+            {/* Timeline if present */}
+            {timeline && (
+                <View style={styles.timelineContainer}>
+                    <Clock size={14} color={theme.text} style={{ opacity: 0.7 }} />
+                    <Text style={styles.timelineText}>{timeline}</Text>
+                </View>
+            )}
 
             {/* Action Buttons */}
-            {actions.length > 0 && (
-                <View style={[styles.actions, { borderTopColor: config.border, borderTopWidth: 1 }]}>
-                    {actions.map((btn, index) => (
+            {actions && actions.length > 0 && (
+                <View style={styles.actionsContainer}>
+                    {actions.map((btn, idx) => (
                         <TouchableOpacity
-                            key={index}
+                            key={idx}
+                            style={styles.button}
                             onPress={btn.action}
-                            style={[
-                                styles.button,
-                                { backgroundColor: index === 0 ? config.text : 'transparent' } // Primary action filled
-                            ]}
+                            activeOpacity={0.7}
                         >
-                            <Text style={[
-                                styles.buttonText,
-                                { color: index === 0 ? (color === 'BLACK' ? '#000' : '#fff') : config.text }
-                            ]}>
-                                {btn.label}
-                            </Text>
+                            <Text style={styles.buttonText}>{btn.label}</Text>
                         </TouchableOpacity>
                     ))}
                 </View>
@@ -150,66 +107,82 @@ export const ProcessStatus = ({
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme: typeof COLOR_CONFIG['BLUE']) => StyleSheet.create({
     container: {
-        borderRadius: 12,
+        backgroundColor: theme.bg,
+        borderRadius: 16,
+        padding: 20,
         borderWidth: 1,
+        borderColor: theme.border,
         marginVertical: 10,
-        overflow: 'hidden',
-        shadowColor: '#000',
+        shadowColor: theme.iconColor,
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
-        shadowRadius: 5,
+        shadowRadius: 8,
         elevation: 2,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
+        marginBottom: 12,
     },
     iconContainer: {
         marginRight: 12,
+        backgroundColor: 'rgba(255,255,255,0.5)',
+        padding: 8,
+        borderRadius: 12,
     },
-    headerText: {
+    titleContainer: {
         flex: 1,
-    },
-    statusLabel: {
-        fontWeight: 'bold',
-        fontSize: 14,
-        marginBottom: 2,
     },
     transferId: {
         fontSize: 12,
-        fontFamily: 'monospace',
-    },
-    body: {
-        paddingHorizontal: 16,
-        paddingBottom: 16,
-    },
-    messageText: {
-        fontSize: 16,
         fontWeight: '600',
-        marginBottom: 4,
+        color: theme.text,
+        opacity: 0.8,
+        marginBottom: 2,
+    },
+    statusLabel: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: theme.text,
+    },
+    mainText: {
+        fontSize: 15,
+        color: theme.text,
+        lineHeight: 22,
+        marginBottom: 16,
+    },
+    timelineContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+        paddingTop: 12,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.05)',
     },
     timelineText: {
         fontSize: 13,
-        fontStyle: 'italic',
+        color: theme.text,
+        marginLeft: 6,
+        fontWeight: '500',
     },
-    actions: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        padding: 12,
-        gap: 8,
-        flexWrap: 'wrap',
+    actionsContainer: {
+        marginTop: 4,
+        gap: 10,
     },
     button: {
-        paddingVertical: 8,
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        paddingVertical: 12,
         paddingHorizontal: 16,
-        borderRadius: 6,
-        minWidth: 80,
+        borderRadius: 10,
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: theme.border,
     },
     buttonText: {
-        fontSize: 13,
+        color: theme.iconColor, // Use the vivid color for button text
         fontWeight: '600',
+        fontSize: 14,
     }
 });

@@ -1,4 +1,4 @@
-import client from './api';
+import client from '../api/client';
 import { getDB } from './storage';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';

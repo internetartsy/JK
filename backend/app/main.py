@@ -12,9 +12,7 @@ from app.core.metrics import (
 import time
 
 app = FastAPI(
-    title="Land Records OCR API",
-    docs_url="/api/docs",
-    openapi_url="/api/openapi.json"
+    title="Land Records OCR API"
 )
 
 # Set app info
@@ -137,4 +135,16 @@ def metrics():
         content=generate_latest(),
         media_type=CONTENT_TYPE_LATEST
     )
+
+from app.api.v1 import transfers
+app.include_router(transfers.router, prefix="/api/v1")
+
+from app.api.v1 import process_debt
+app.include_router(process_debt.router, prefix="/api/v1")
+
+from app.api.v1 import disputes
+app.include_router(disputes.router, prefix="/api/v1")
+
+from app.api.v1 import spatial_analysis
+app.include_router(spatial_analysis.router, prefix="/api/v1")
 

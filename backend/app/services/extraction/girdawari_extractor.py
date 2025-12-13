@@ -6,23 +6,22 @@ class GirdawariExtractor(BaseFieldExtractor):
     """Extract fields from Girdawari (crop inspection) documents"""
     
     def extract(self, ocr_result: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Extract structured fields from Girdawari document
-        
-        Expected fields:
-        - khasra_number: Plot number
-        - village: Village name
-        - owner_name: Owner name (Urdu/English)
-        - father_name: Father's name
-        - cultivator_name: Cultivator name (if different from owner)
-        - area: Cultivated area
-        - area_unit: Unit (kanal, marla, etc.)
-        - crop: Crop name
-        - crop_code: Standardized crop code
-        - season: Kharif/Rabi
-        - irrigation: Irrigation type
-        - date: Inspection date
-        """
+        """Extract fields from OCR data"""
+        # 1. Try Table Extraction (Preferred for Jamabandi/Girdawari)
+        if ocr_result.get("tables") and len(ocr_result["tables"]) > 0:
+            try:
+                table_fields = self._extract_from_table(ocr_result["tables"][0])
+                if table_fields:
+                    return {
+                        "fields": table_fields,
+                        "confidence": ocr_result.get("confidence", 0.9),
+                        "source": "girdawari_table_extractor"
+                    }
+            except Exception as e:
+                # Log and fallback
+                print(f"Table extraction failed: {e}")
+
+        # 2. Fallback to Text Pattern Matching
         text_blocks = self._extract_text_blocks(ocr_result.get("ocr", {}))
         full_text = " ".join(text_blocks)
         
@@ -46,8 +45,85 @@ class GirdawariExtractor(BaseFieldExtractor):
         return {
             "fields": fields,
             "confidence": self._calculate_confidence(fields, ocr_confidence),
-            "source": "girdawari_extractor"
+            "source": "girdawari_text_extractor"
         }
+
+    def _extract_from_table(self, table: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """
+        Extract fields from structural table data
+        Assumes standard 12-column Jamabandi format
+        """
+        # Simple heuristic: Look for the row with data (skip header)
+        # We take the first data row for now (Multi-row support logic needed for scale)
+        if not table.get("cells"):
+            return None
+            
+        cells = table["cells"]
+        # Find row indices
+        rows = sorted(list(set(c["row_index"] for c in cells)))
+        if len(rows) < 2: return None # Header only?
+        
+        # Take 2nd row (index 1) assuming row 0 is header
+        data_row_index = rows[1] 
+        row_cells = [c for c in cells if c["row_index"] == data_row_index]
+        row_cells.sort(key=lambda x: x["col_index"])
+        
+        # Map columns (0-based)
+        # Col 0: Khevat, Col 4: Owner, Col 5: Cultivator, Col 7: Khasra, Col 8: Area
+        fields = {}
+        
+        for cell in row_cells:
+            text = cell["text"].strip()
+            idx = cell["col_index"]
+            
+            if idx == 7: # Khasra
+                 fields["khasra_number"] = self._extract_number(text)
+            elif idx == 8: # Area
+                 fields["area_text"] = text
+                 fields["area"] = self._extract_number(text)
+            elif idx == 4: # Owner (Malik)
+                 fields["owner_name"] = text
+                 # Parse Parentage logic here if needed
+            elif idx == 5: # Cultivator (Kashtakar)
+                 # "Split column 5 based on urdu words"
+                 # Pattern: Name (pisar/sfo) Parent (kaum) Caste (sakin) Residence
+                 parts = self._parse_person_details(text)
+                 fields["cultivator_name"] = parts.get("name")
+                 fields["cultivator_father"] = parts.get("father")
+                 fields["caste"] = parts.get("caste")
+                 fields["residence"] = parts.get("residence")
+        
+        return fields
+
+    def _parse_person_details(self, text: str) -> Dict[str, str]:
+        """
+        Parse: "Names... Pisar/Wo ... Parent ... Kaum ... Caste ... Sakin ... Village"
+        """
+        details = {}
+        # Simple splitting logic based on keywords
+        # 1. Split by 'Sakin' (Resident)
+        if 'sakin' in text.lower() or 'سکن' in text:
+            parts = re.split(r'sakin|سکن', text, flags=re.IGNORECASE)
+            details["residence"] = parts[1].strip() if len(parts) > 1 else ""
+            remaining = parts[0]
+        else:
+            remaining = text
+            
+        # 2. Split by 'Kaum' (Caste)
+        if 'kaum' in text.lower() or 'قوم' in text:
+            parts = re.split(r'kaum|قوم', text, flags=re.IGNORECASE)
+            details["caste"] = parts[1].strip() if len(parts) > 1 else ""
+            remaining = parts[0]
+            
+        # 3. Split by Pisar/Walad (Father)
+        if 'pisar' in text.lower() or 'walad' in text.lower() or 'ولد' in text:
+            parts = re.split(r'pisar|walad|ولد', remaining, flags=re.IGNORECASE)
+            details["father"] = parts[1].strip() if len(parts) > 1 else ""
+            details["name"] = parts[0].strip()
+        else:
+            details["name"] = remaining.strip()
+            
+        return details
     
     def _extract_khasra_number(self, text: str) -> Optional[str]:
         """Extract khasra number"""

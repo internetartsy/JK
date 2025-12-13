@@ -14,7 +14,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your camera to scan land records.",
+        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your microphone."
+      },
+      "bundleIdentifier": "com.agristack.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -46,10 +51,11 @@
             "buildToolsVersion": "34.0.0"
           },
           "ios": {
-            "deploymentTarget": "14.0"
+            "deploymentTarget": "15.1"
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "web": {
       "favicon": "./assets/favicon.png"

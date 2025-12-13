@@ -8,8 +8,13 @@ import { store } from './src/store';
 // Screens
 import RoleSelectionScreen from './src/screens/auth/RoleSelectionScreen';
 import OperatorDashboard from './src/screens/dashboard/OperatorDashboard';
-import { CameraScreen } from './src/screens/landRecords/ScanDocumentScreen';
+import OCRProcessingScreen from './src/screens/landRecords/OCRProcessingScreen';
 import OfflineSyncScreen from './src/screens/offline/OfflineSyncScreen';
+
+// Farmer Screens
+import FarmerLogin from './src/screens/farmer/FarmerLogin';
+import FarmerSignup from './src/screens/farmer/FarmerSignup';
+import FarmerDashboard from './src/screens/farmer/FarmerDashboard';
 
 const Stack = createStackNavigator();
 
@@ -17,15 +22,20 @@ function OperatorStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen name="OperatorDashboard" component={OperatorDashboard} options={{ title: 'Operator Home' }} />
-      <Stack.Screen name="ScanDocument" component={MockCameraWrapper} options={{ headerShown: false }} />
+      <Stack.Screen name="ScanDocument" component={OCRProcessingScreen} options={{ headerShown: false }} />
       <Stack.Screen name="OfflineSync" component={OfflineSyncScreen} options={{ title: 'Sync Data' }} />
     </Stack.Navigator>
   );
 }
 
-// Wrapper to handle camera props navigation
-function MockCameraWrapper({ navigation }: any) {
-  return <CameraScreen onCapture={(path) => navigation.goBack()} onClose={() => navigation.goBack()} />;
+function FarmerStack() {
+  return (
+    <Stack.Navigator initialRouteName="FarmerLogin">
+      <Stack.Screen name="FarmerLogin" component={FarmerLogin} options={{ headerShown: false }} />
+      <Stack.Screen name="FarmerSignup" component={FarmerSignup} options={{ title: 'Register' }} />
+      <Stack.Screen name="FarmerDashboard" component={FarmerDashboard} options={{ title: 'Farmer Home', headerLeft: () => null }} />
+    </Stack.Navigator>
+  );
 }
 
 export default function App() {
@@ -35,6 +45,7 @@ export default function App() {
         <Stack.Navigator initialRouteName="RoleSelection" screenOptions={{ headerShown: false }}>
           <Stack.Screen name="RoleSelection" component={RoleSelectionScreen} />
           <Stack.Screen name="OperatorTabs" component={OperatorStack} />
+          <Stack.Screen name="FarmerPortal" component={FarmerStack} />
           {/* Add other role stacks here (Verifier, Tahsildar, etc.) */}
           <Stack.Screen name="VerifierTabs" component={OperatorStack} />
           <Stack.Screen name="TahsildarTabs" component={OperatorStack} />

@@ -69,7 +69,9 @@ def process_ocr_document_task(object_name: str, bucket_name: str = "scans", doc_
             overall_confidence=ocr_result["confidence"],
             is_handwritten=False, # TODO: Detect handwriting or pass as arg
             has_tables=has_tables,
-            table_confidence=table_confidence
+            table_confidence=table_confidence,
+            file_content=image_data,
+            file_name=object_name
         )
 
         final_result = {

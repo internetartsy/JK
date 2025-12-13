@@ -65,11 +65,11 @@ export default defineConfig({
     allowedHosts: true, // Allow all hosts (needed for Nginx proxy)
     proxy: {
       '/api': {
-        target: process.env.VITE_API_TARGET || 'http://localhost:8090',
+        target: process.env.VITE_API_TARGET || 'http://localhost:8000',
         changeOrigin: true,
       },
       '/app': {
-        target: process.env.VITE_FRAPPE_TARGET || 'http://localhost:8090',
+        target: process.env.VITE_FRAPPE_TARGET || 'http://localhost:8000',
         changeOrigin: true,
       },
     },
