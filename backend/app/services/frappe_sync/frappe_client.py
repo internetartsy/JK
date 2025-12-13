@@ -83,6 +83,11 @@ class FrappeClient:
     
     def create_review_task(self, doc_id: str, doc_type: str, confidence: float, fields: Dict[str, Any]) -> Dict[str, Any]:
         """Create a ReviewTask in Frappe for low-confidence records"""
+        data = {
+            "source_document_id": doc_id,
+            "document_type": doc_type,
+            "ocr_confidence": confidence,
+            "extracted_data": fields,
             "status": "Pending"
         }
         return self.create_doc("Review Task", data)
