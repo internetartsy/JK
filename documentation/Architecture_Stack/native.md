@@ -3,16 +3,16 @@
 ## 1. Scope & Responsibility
 Offline Data Collection and Field Verification.
 
-## 2. Architecture: Direct/Nginx (As-Is)
+## 2. Architecture: Rust Security Aligned
 ```mermaid
 graph TD
-    Device -->|Sync| NGINX[Nginx :80]
-    NGINX --> API[FastAPI :8000]
+    Device[Mobile App] -->|HTTPS/Auth| RustGW[Rust Gateway :8090]
+    RustGW -->|Audit/RateLimit| API[FastAPI :8000]
     Device -->|Offline| SQL[SQLite]
 ```
 
 ## 3. Endpoints & Ports
-*   **Port**: N/A (Client), Connects to `80`.
+*   **Port**: N/A (Client), Connects to `8090` (Security Gateway).
 *   **Endpoints**:
     *   `GET /sync/changes`
     *   `POST /sync/batch`
