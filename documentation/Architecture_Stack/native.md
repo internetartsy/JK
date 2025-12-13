@@ -44,6 +44,17 @@ Stored in `AsyncStorage` / SQLite.
 *   **Gateway URL**: `https://api.jk-land.gov.in` (Prod) / `http://192.168.x.x:8090` (Dev).
 *   **Auth Flow**: Keycloak (AppAuth) -> Access Token -> Stored in SecureStore.
 
+### 4.1 Developer API Reference (Sync & Auth)
+These endpoints are critical for the mobile app's offline-first functionality.
+
+| Feature | Method | Endpoint | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Auth** | `POST` | `/auth/token` | Keycloak token exchange (PKCE) |
+| **Sync** | `POST` | `/api/v1/sync/batch` | Uploads queued offline actions (Parcels, OCR) |
+| **Sync** | `GET` | `/api/v1/sync/status/{batch_id}` | Checks if background processing finished |
+| **OCR** | `POST` | `/api/v1/ocr/upload` | Direct upload of captured images (if online) |
+| **Profile** | `GET` | `/api/v1/users/me` | Fetches operator details (Name, Village Scope) |
+
 ## 5. Directory Structure
 ```
 mobile/src/

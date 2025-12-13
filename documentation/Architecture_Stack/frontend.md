@@ -36,6 +36,17 @@ graph TD
 *   **Port**: `5173` (Development)
 *   **Target API**: `http://localhost:8090` (Security Gateway) or `8000` (Direct).
 
+### 4.1 Developer API Reference (Key Integrations)
+These endpoints are actively consumed by the frontend client. Use these to debug network tabs.
+
+| Feature | Method | Endpoint | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Dashboard** | `GET` | `/api/v1/parcels/stats` | Fetches aggregate counters (Total, Pending, disputes) |
+| **Visuals** | `GET` | `/api/v1/parcels/recent` | Populates "Recent Activity" feed |
+| **Review** | `GET` | `/api/v1/reviews/pending` | Loads the OCR verification queue |
+| **Review** | `PATCH` | `/api/v1/reviews/{id}` | Submits corrections (e.g. valid status) |
+| **Map** | `GET` | `/api/v1/spatial/tiles/{z}/{x}/{y}.pbf` | Vector tiles for the map layer |
+
 ## 5. Directory Structure
 ```
 frontend-landing/src/
