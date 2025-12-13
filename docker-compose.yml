@@ -68,6 +68,9 @@ services:
       DATABASE_URL: postgresql://jk_user:${DB_PASSWORD:-password}@postgres:5432/jk_land_records
       REDIS_URL: redis://redis:6379
       ELASTICSEARCH_HOST: elasticsearch:9200
+      KEYCLOAK_URL: http://keycloak:8080
+      REALM: agristack
+      CLIENT_ID: agristack-backend
     depends_on:
       - postgres
       - redis

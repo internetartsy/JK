@@ -1,7 +1,7 @@
 use actix_web::{web, App, HttpServer, HttpResponse, Responder, HttpRequest, middleware as actix_middleware, Error};
 mod middleware;
 
-use log::{info, warn, error};
+use log::{info, error};
 use std::env;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};

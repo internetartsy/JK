@@ -18,9 +18,6 @@
             "realmRoles": [
                 "officer",
                 "admin"
-            ],
-            "requiredActions": [
-                "CONFIGURE_TOTP"
             ]
         },
         {
@@ -38,6 +35,25 @@
             ],
             "realmRoles": [
                 "farmer"
+            ]
+        },
+        {
+            "username": "admin",
+            "enabled": true,
+            "email": "admin@agristack.gov.in",
+            "firstName": "System",
+            "lastName": "Admin",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "admin",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "admin",
+                "enumerator",
+                "validator"
             ]
         }
     ],
