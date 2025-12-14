@@ -8,15 +8,15 @@ Defines Frappe (ERPNext) as the **System of Record** for Land Records.
 ## 2. Architecture: Logical Flow
 ```mermaid
 graph LR
-    subgraph "External"
+    subgraph External
         API[FastAPI Backend :8000]
     end
-    subgraph "Frappe Ecosystem"
+    subgraph Frappe Ecosystem
         WEB[ERPNext Web :8080]
         DB[(MariaDB :3306)]
         REDIS[Redis :6379]
     end
-    API -->|REST API (Client)| WEB
+    API -->|REST API| WEB
     WEB -->|Webhooks| API
     WEB -->|ORM| DB
 ```
