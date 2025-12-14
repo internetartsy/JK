@@ -175,16 +175,17 @@ export const reviewApi = {
 };
 
 export const ocrApi = {
-    upload: (file: File) => {
+    upload: async (file: File) => {
+        // Always use the Python Backend for OCR Analysis + Frappe Sync
+        // The Backend (ocr.py) -> Celery -> SyncService flow handles storage & data creation
         const formData = new FormData();
         formData.append('file', file);
-        // Defaulting to auto-process async
-        return apiClient.post<{ job_id: string, status: string }>('/ocr/run-async', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        return apiClient.post<{ job_id: string, status: string }>('/ocr/run-async', formData);
     },
     status: (jobId: string) =>
-        apiClient.get<{ status: string, result?: any }>(`/ocr/status/${jobId}`)
+        frappeDataApi.getResource('OCR Result', jobId)
+            .then(r => ({ data: { status: r.data.data.status, result: r.data.data.extracted_data } }))
+            .catch(() => apiClient.get<{ status: string, result?: any }>(`/ocr/status/${jobId}`))
 };
 
 export const frappeSyncApi = {
@@ -206,6 +207,17 @@ export const frappeDataApi = {
                 limit_page_length: 500
             }
         }),
+    create: (doctype: string, data: any) => frappeClient.post(`/resource/${doctype}`, data),
+    uploadFile: (formData: FormData) => frappeClient.post('/method/upload_file', formData)
+};
+
+export const dataCleaningApi = {
+    runPipeline: async (villageCode?: string) => {
+        const response = await frappeClient.get('/method/land_records.lr_core.utils.data_cleaning.run_deduplication_pipeline', {
+            params: { village_code: villageCode }
+        });
+        return response.data.message;
+    }
 };
 
 export default apiClient;

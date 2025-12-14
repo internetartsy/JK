@@ -155,3 +155,6 @@ app.include_router(aadhaar_ror.router, prefix="/api/v1")
 from app.api.v1 import farmer_portal
 app.include_router(farmer_portal.router, prefix="/api/v1")
 
+from app.api.v1 import farmer_registry
+app.include_router(farmer_registry.router, prefix="/api/v1")
+

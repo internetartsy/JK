@@ -11,21 +11,21 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'add_parcel_id_001'
-down_revision = None
+down_revision = '016fa30ac5ce'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     # Add parcel_id column
-    op.add_column('land_parcel', 
+    op.add_column('landparcel', 
         sa.Column('parcel_id', sa.String(length=14), nullable=True)
     )
     
     # Create unique index
     op.create_index(
         'ix_land_parcel_parcel_id',
-        'land_parcel',
+        'landparcel',
         ['parcel_id'],
         unique=True
     )
@@ -35,5 +35,5 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_index('ix_land_parcel_parcel_id', table_name='land_parcel')
-    op.drop_column('land_parcel', 'parcel_id')
+    op.drop_index('ix_land_parcel_parcel_id', table_name='landparcel')
+    op.drop_column('landparcel', 'parcel_id')

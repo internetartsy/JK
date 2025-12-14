@@ -8,6 +8,7 @@ import { ReviewQueue } from './components/ReviewQueue';
 import { MapView } from './components/MapView';
 import { Settings } from './components/Settings';
 import { LandingPage } from './components/LandingPage';
+import { DataCleaning } from './components/DataCleaning';
 import { Menu } from 'lucide-react';
 
 import { SettingsProvider } from './context/SettingsContext';
@@ -84,6 +85,8 @@ function App() {
             {currentView === 'review' && <ReviewQueue />}
 
             {currentView === 'registry' && <Registry />}
+
+            {currentView === 'data-cleaning' && <DataCleaning />}
 
             {currentView === 'settings' && <Settings />}
           </div>

@@ -1,4 +1,4 @@
-import client from '../api/client';
+import client, { frappeClient } from '../api/client';
 import * as FileSystem from 'expo-file-system';
 import { Platform } from 'react-native';
 
@@ -11,59 +11,56 @@ export interface OCRResult {
 
 export const OCRService = {
     /**
-     * Upload an image to the Async OCR Pipeline
-     * Maps to: POST /api/v1/ocr/run-async
+     * Upload an image to the Frappe Backend Logic Queue
      */
     async uploadForProcessing(uri: string, docType: string = 'girdawari', mimeType?: string): Promise<{ job_id: string, status: string }> {
-        // Handle Mock Data (Simulator)
         if (uri.startsWith('mock-file://')) {
-            console.log('[OCR] Mock upload detected, returning simulated job');
-            return new Promise(resolve => {
-                setTimeout(() => {
-                    resolve({
-                        job_id: 'mock-job-' + Date.now(),
-                        status: 'processing'
-                    });
-                }, 1000);
-            });
+            return new Promise(resolve => setTimeout(() => resolve({ job_id: 'mock-' + Date.now(), status: 'processing' }), 1000));
         }
 
         try {
             const formData = new FormData();
-
-            // Prepare file object for React Native FormData
             const filename = uri.split('/').pop() || `scan_${Date.now()}`;
-            // Use provided mimeType or fallback to extension check
-            let fileType = mimeType;
-            if (!fileType) {
-                if (filename.endsWith('.pdf')) fileType = 'application/pdf';
-                else if (filename.endsWith('.png')) fileType = 'image/png';
-                else fileType = 'image/jpeg';
-            }
+            let fileType = mimeType || (filename.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
 
-            // @ts-ignore: React Native specific FormData handling
+            // @ts-ignore
             formData.append('file', {
                 uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
                 name: filename,
                 type: fileType,
             });
+            formData.append('is_private', '1');
 
-            formData.append('doc_type', docType);
-            formData.append('langs', 'ur+en');
+            console.log(`[OCR] Uploading to Frappe Logic Queue...`);
 
-            console.log(`[OCR] Uploading ${filename} (${fileType}) to ${client.defaults.baseURL}/ocr/run-async`);
-
-            const response = await client.post('/ocr/run-async', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+            // 1. Upload File
+            const uploadRes = await frappeClient.post('/method/upload_file', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            console.log('[OCR] Upload success:', response.data);
-            return response.data;
+            // 2. Create Document
+            const docRes = await frappeClient.post('/resource/OCR Result', {
+                scan_id: `MOB-${Date.now()}`,
+                description: `Mobile Upload: ${uploadRes.data.message.file_url}`,
+                status: 'Processing' // Enters Logic Queue
+            });
+
+            console.log('[OCR] Frappe Doc Created:', docRes.data.data.name);
+            return { job_id: docRes.data.data.name, status: 'submitted' };
+
         } catch (error) {
-            console.error('[OCR] Upload failed:', error);
-            throw error;
+            console.warn('[OCR] Frappe Upload failed, trying Gateway Fallback extraction...', error);
+            // Fallback to FastAPI extraction
+            const formData = new FormData();
+            const filename = uri.split('/').pop() || `scan_${Date.now()}`;
+            // @ts-ignore
+            formData.append('file', { uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri, name: filename, type: 'image/jpeg' });
+            formData.append('doc_type', docType);
+
+            const response = await client.post('/ocr/run-async', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data;
         }
     },
 

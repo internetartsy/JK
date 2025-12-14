@@ -28,6 +28,7 @@ export function Sidebar({ currentView, onChangeView, isOpen, onClose }: SidebarP
         { id: 'map', icon: Map, label: 'Map View' },
         { id: 'review', icon: FileText, label: 'Review Queue' },
         { id: 'registry', icon: Database, label: 'Land Registry' },
+        { id: 'data-cleaning', icon: ShieldCheck, label: 'Data Cleaning' },
         { id: 'settings', icon: Settings, label: 'Settings' },
     ];
 

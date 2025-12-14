@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
-import { Activity, AlertTriangle, CheckCircle2, Clock, FileCheck, Map, Users } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle2, Clock, FileCheck, Users } from 'lucide-react';
 import { parcelApi, reviewApi, type LandParcel, type ReviewTask } from '../api/client';
 
 export function Dashboard() {
@@ -74,15 +74,7 @@ export function Dashboard() {
                     </p>
                 </motion.div>
 
-                <div className="flex gap-3">
-                    <button
-                        onClick={() => window.location.href = '/?debug=true&view=map'}
-                        className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-lg shadow-primary-900/20"
-                    >
-                        <Map size={18} />
-                        View Map
-                    </button>
-                </div>
+
             </div>
 
             {/* Key Metrics */}

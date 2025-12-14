@@ -74,6 +74,9 @@ services:
       KEYCLOAK_URL: http://keycloak:8080
       REALM: agristack
       CLIENT_ID: agristack-backend
+      FRAPPE_URL: http://erp-web:8000
+      FRAPPE_API_KEY: 84eeac4d6d0cdff
+      FRAPPE_API_SECRET: 95f136e022e217d
     depends_on:
       - postgres
       - redis
@@ -87,6 +90,38 @@ services:
       retries: 3
     volumes:
       - ./backend:/app
+
+  # Celery Worker
+  worker:
+    build: ./backend
+    container_name: jk-worker
+    command: celery -A app.core.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://jk_user:${DB_PASSWORD:-password}@postgres:5432/jk_land_records
+      REDIS_URL: redis://redis:6379
+      ELASTICSEARCH_HOST: elasticsearch:9200
+      KEYCLOAK_URL: http://keycloak:8080
+      REALM: agristack
+      CLIENT_ID: agristack-backend
+      FRAPPE_URL: http://erp-web:8000
+      FRAPPE_API_KEY: 84eeac4d6d0cdff
+      FRAPPE_API_SECRET: 95f136e022e217d
+      # MinIO Config for Docker Internal Network
+
+      MINIO_ENDPOINT: minio:9000
+
+
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - jk-network
+    volumes:
+      - ./backend:/app
+
 
   # React Frontend
   frontend:

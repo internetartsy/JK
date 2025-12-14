@@ -8,6 +8,9 @@ from app.services.ocr.confidence_config import (
     HANDWRITTEN_ADJUSTMENTS
 )
 import logging
+import json
+import requests
+from app.utils.parcel_id_generator import ULPINGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +70,191 @@ class FrappeSyncService:
         logger.info(f"Synced Parcel {parcel.id} to Frappe: {action}")
         return result
     
+    def _create_or_get_farmer(self, name_en: str, name_ur: str, father: str) -> Optional[str]:
+        """Helper to find or create a farmer and return their ID"""
+        import uuid
+        # Generate a provisional ID
+        farmer_id = f"FARM-{uuid.uuid4().hex[:8].upper()}"
+        
+        # TODO: Add search logic to avoid duplicates
+        farmer_data = {
+            "farmer_id": farmer_id,
+            "name_english": name_en,
+            "name_urdu": name_ur,
+            "father_name": father
+        }
+        try:
+             res = self.client.create_doc("Farmer", farmer_data)
+             return res.get("name")
+        except Exception as e:
+            logger.error(f"Failed to create farmer {name_en}: {e}")
+            return None
+
+    def _create_or_get_parcel(self, 
+        doc_id: str, 
+        fields: Dict[str, Any], 
+        current_owner_id: Optional[str] = None
+    ) -> Optional[str]:
+        """Helper to create or update Land Parcel with GeoJSON and ULPIN"""
+        
+        # Prepare GeoJSON - required for ULPIN
+        geojson_raw = fields.get("geojson", fields.get("coordinates", None))
+        
+        # 1. Generate ULPIN
+        ulpin = fields.get("ulpin")
+        if not ulpin:
+            # Try generating from Geometry
+            if geojson_raw:
+                try:
+                    # Unwrap Feature if necessary
+                    g_data = geojson_raw if isinstance(geojson_raw, dict) else json.loads(geojson_raw)
+                    if g_data.get("type") == "Feature":
+                         g_data = g_data.get("geometry")
+                         
+                    # Default: Jammu (01), Akhnoor (05) - in prod, map from Village ID
+                    ulpin = ULPINGenerator.generate_from_centroid(
+                        g_data, 
+                        district_code="01", 
+                        tehsil_code="05"
+                    )
+                    logger.info(f"Generated ULPIN {ulpin} from geometry")
+                except Exception as e:
+                    logger.warning(f"ULPIN Generation failed: {e}")
+                    ulpin = f"JK-G-{doc_id[-6:]}".upper()
+            else:
+                 ulpin = f"JK-G-{doc_id[-6:]}".upper()
+        
+        # 2. Check if Parcel Already Exists (Idempotency)
+        # 2. Check if Parcel Already Exists (Idempotency)
+        try:
+             # Strategy: 
+             # 1. Search by ULPIN
+             # 2. Search by Parcel ID (e.g. Doc ID)
+             # 3. Search by Khasra + Village (Business logic duplicate)
+             
+             filters = [
+                {"ulpin": ulpin},
+                {"parcel_id": doc_id},
+             ]
+             
+             # Also add Khasra/Village check if available
+             khasra = fields.get("khasra_number")
+             village = fields.get("village", fields.get("village_id"))
+             
+             existing_docs = []
+             for f in filters:
+                 res = self.client.get_list("Land Parcel", filters=f)
+                 if res:
+                     existing_docs = res
+                     break
+             
+             # Fallback to Khasra/Village compound check
+             if not existing_docs and khasra and village and village != "Unknown":
+                 res = self.client.get_list("Land Parcel", filters={
+                     "khasra_number": khasra,
+                     "village_id": village
+                 })
+                 if res:
+                     existing_docs = res
+                     
+             if existing_docs:
+                 existing_name = existing_docs[0].get("name")
+                 logger.info(f"Parcel {existing_name} already exists. Updating...")
+                 # Optional: Update the ULPIN/GeoJSON on the existing record if it was missing?
+                 # For now, just return it to link.
+                 return existing_name
+                 
+        except Exception as e:
+             logger.warning(f"Failed to check existing parcel: {e}")
+
+        if geojson_raw and isinstance(geojson_raw, dict):
+            import json
+            geojson_raw = json.dumps(geojson_raw)
+
+        land_data = {
+            "parcel_id": doc_id, 
+            "ulpin": ulpin,
+            "village_id": fields.get("village", fields.get("village_id", "Unknown")),
+            "khasra_number": fields.get("khasra_number", "Unknown"),
+            "area_text": fields.get("area", fields.get("area_text", "")),
+            "status": "Active",
+            # GeoJSON mapping
+            "geojson": geojson_raw
+        }
+        
+        if current_owner_id:
+            land_data["farmer_id"] = current_owner_id
+
+        try:
+            # We don't set 'name' explicitly as Frappe might use auto-naming series.
+            # But since we checked for duplicates, we should be safe.
+            res = self.client.create_doc("Land Parcel", land_data)
+            return res.get("name")
+        except Exception as e:
+            logger.error(f"Failed to create parcel {doc_id}: {e}")
+            return None
+
+    def sync_transfer_to_frappe(
+        self,
+        doc_id: str,
+        fields: Dict[str, Any],
+        file_content: Optional[bytes] = None,
+        file_name: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Sync extracted Mutation/Registry data to Ownership Transfer flow.
+        Creates Buyer, Seller, Land Parcel (with GeoJSON), and the Transfer request.
+        """
+        logger.info(f"Syncing Transfer for {doc_id}")
+        
+        # 1. Create/Get Seller (From Farmer)
+        seller_name_en = fields.get("seller_name", "Unknown")
+        seller_name_ur = fields.get("seller_name_ur", seller_name_en)
+        seller_father = fields.get("seller_father", "Unknown")
+        from_farmer_id = self._create_or_get_farmer(seller_name_en, seller_name_ur, seller_father)
+        
+        # 2. Create/Get Buyer (To Farmer)
+        buyer_name_en = fields.get("buyer_name", "Unknown")
+        buyer_name_ur = fields.get("buyer_name_ur", buyer_name_en)
+        buyer_father = fields.get("buyer_father", "Unknown")
+        to_farmer_id = self._create_or_get_farmer(buyer_name_en, buyer_name_ur, buyer_father)
+        
+        if not from_farmer_id or not to_farmer_id:
+            logger.error("Failed to create/find farmers for transfer")
+            return {"error": "Failed to create farmer records"}
+
+        # 3. Create/Get Land Parcel (Plot)
+        # Note: Transfer Request links to a Plot. The Plot carries the GeoJSON.
+        plot_id = self._create_or_get_parcel(doc_id, fields, current_owner_id=from_farmer_id)
+        if not plot_id:
+             logger.error("Failed to create land parcel for transfer")
+             return {"error": "Failed to create land parcel"}
+
+        # 4. Create Ownership Transfer
+        transfer_data = {
+             "transfer_id": doc_id,
+             "plot_id": plot_id,
+             "from_farmer": from_farmer_id,
+             "to_farmer": to_farmer_id,
+             "transfer_type": fields.get("transfer_type", "Sale"),
+             "status": "Submitted",
+             "date_of_application": fields.get("date", "Today")
+        }
+        
+        try:
+            res = self.client.create_doc("Ownership Transfer", transfer_data)
+            transfer_name = res.get("name")
+            logger.info(f"Created Ownership Transfer {transfer_name}")
+            
+            # Attach file
+            if file_content and file_name and transfer_name:
+                self.client.attach_file("Ownership Transfer", transfer_name, file_content, file_name)
+            
+            return {"transfer_created": True, "transfer_id": transfer_name}
+        except Exception as e:
+            logger.error(f"Failed to create Ownership Transfer: {e}")
+            return {"error": str(e)}
+
     def analyze_and_route_review(
         self,
         doc_id: str,
@@ -179,7 +367,8 @@ class FrappeSyncService:
                         "khasra_number": fields.get("khasra_number", "Unknown"),
                         "area_text": fields.get("area", fields.get("area_text", "")),
                         "status": "Under Review", 
-                        "owner_name": owner_name_raw, # Display name
+                        "owner_name": fields.get("owner_name", owner_name_raw), # English Name
+                        "owner_name_in_local_language": fields.get("owner_name_urdu", owner_name_raw), # Urdu Name
                         "father_name": father_name,
                         "document_date": fields.get("date", ""),
                         "is_digitized_via_ocr": 1,
@@ -202,7 +391,10 @@ class FrappeSyncService:
                 except Exception as e:
                     logger.error(f"Failed to auto-create Land Parcel in Frappe: {e}")
                     result["record_created"] = False
+                    result["record_created"] = False
                     result["error"] = str(e)
+        
+        return result
     
     def create_review_task_with_priority(
         self,
@@ -227,20 +419,17 @@ class FrappeSyncService:
             HANDWRITTEN_ADJUSTMENTS.get("require_dual_review", False)
         )
         
+        import json
         task_data = {
             "document_id": doc_id,
-            "document_type": doc_type,
+            "document_type": doc_type.capitalize(),
             "confidence_score": overall_confidence,
-            "extracted_fields": fields,
-            "field_confidences": field_confidences,
-            "status": "Pending",
-            "priority": priority.value,
-            "fields_to_review": fields_to_review,
-            "review_notes": review_notes,
-            "is_handwritten": is_handwritten,
-            "require_dual_review": require_dual_review,
-            "assigned_to": suggested_assignee
+            "extracted_fields": json.dumps(fields), # Serialize manually to ensure string for JSON field
+            "status": "Pending"
         }
+        
+        if suggested_assignee:
+            task_data["assigned_to"] = suggested_assignee
         
         try:
             result = self.client.create_doc("Review Task", task_data)

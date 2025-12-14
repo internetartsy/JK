@@ -1,0 +1,34 @@
+Note: Unnecessary use of -X or --request, POST is already inferred.
+* Host localhost:8080 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:8080...
+* Connected to localhost (::1) port 8080
+> POST /api/resource/Farmer HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/8.7.1
+> Accept: */*
+> Authorization: token 84eeac4d6d0cdff:95f136e022e217d
+> Content-Type: application/json
+> Content-Length: 86
+> 
+} [86 bytes data]
+* upload completely sent off: 86 bytes
+< HTTP/1.1 417 EXPECTATION FAILED
+< Server: Werkzeug/3.1.4 Python/3.11.6
+< Date: Sun, 14 Dec 2025 19:21:21 GMT
+< Content-Type: application/json
+< Content-Length: 1789
+< Set-Cookie: sid=Guest; Expires=Sun, 21 Dec 2025 21:21:21 GMT; Max-Age=612000; HttpOnly; Path=/; SameSite=Lax
+< Set-Cookie: system_user=no; Path=/; SameSite=Lax
+< Set-Cookie: full_name=Guest; Path=/; SameSite=Lax
+< Set-Cookie: user_id=Guest; Path=/; SameSite=Lax
+< Set-Cookie: user_image=; Path=/; SameSite=Lax
+< Connection: close
+< 
+{ [1789 bytes data]
+100  1875  100  1789  100    86   251k  12370 --:--:-- --:--:-- --:--:--  305k
+* Closing connection
+{"exception":"frappe.exceptions.ValidationError: Farmer ID is required","exc_type":"ValidationError","exc":"[\"Traceback (most recent call last):\\n  File \\\"apps/frappe/frappe/app.py\\\", line 115, in application\\n    response = frappe.api.handle(request)\\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"apps/frappe/frappe/api/__init__.py\\\", line 52, in handle\\n    data = endpoint(**arguments)\\n           ^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"apps/frappe/frappe/api/v1.py\\\", line 46, in create_doc\\n    return frappe.new_doc(doctype, **data).insert()\\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"apps/frappe/frappe/model/document.py\\\", line 304, in insert\\n    self.set_new_name(set_name=set_name, set_child_names=set_child_names)\\n  File \\\"apps/frappe/frappe/model/document.py\\\", line 544, in set_new_name\\n    set_new_name(self)\\n  File \\\"apps/frappe/frappe/model/naming.py\\\", line 175, in set_new_name\\n    set_name_from_naming_options(autoname, doc)\\n  File \\\"apps/frappe/frappe/model/naming.py\\\", line 210, in set_name_from_naming_options\\n    frappe.throw(_(\\\"{0} is required\\\").format(doc.meta.get_label(fieldname)))\\n  File \\\"apps/frappe/frappe/__init__.py\\\", line 609, in throw\\n    msgprint(\\n  File \\\"apps/frappe/frappe/__init__.py\\\", line 574, in msgprint\\n    _raise_exception()\\n  File \\\"apps/frappe/frappe/__init__.py\\\", line 525, in _raise_exception\\n    raise exc\\nfrappe.exceptions.ValidationError: Farmer ID is required\\n\"]","_server_messages":"[\"{\\\"message\\\": \\\"Farmer ID is required\\\", \\\"title\\\": \\\"Message\\\", \\\"indicator\\\": \\\"red\\\", \\\"raise_exception\\\": 1, \\\"__frappe_exc_id\\\": \\\"60f7864917eeba73c19d04a05a391465ae523dce72e40317eda97452\\\"}\"]"}

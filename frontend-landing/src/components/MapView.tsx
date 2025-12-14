@@ -154,6 +154,7 @@ export function MapView({
                 id: 'parcels-fill',
                 type: 'fill',
                 source: 'parcels',
+                filter: ['==', 'id', ''], // Initially hidden (User Request: Show only on search)
                 paint: {
                     'fill-color': [
                         'match',
@@ -172,6 +173,7 @@ export function MapView({
                 id: 'parcels-outline',
                 type: 'line',
                 source: 'parcels',
+                filter: ['==', 'id', ''], // Initially hidden
                 paint: {
                     'line-color': [
                         'match',
@@ -203,6 +205,7 @@ export function MapView({
                 id: 'parcels-labels',
                 type: 'symbol',
                 source: 'parcels',
+                filter: ['==', 'id', ''], // Initially hidden
                 layout: {
                     'text-field': ['get', 'farmer_id'],
                     'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
@@ -296,10 +299,10 @@ export function MapView({
             setIsSearching(false);
             if (map.current) {
                 map.current.setFilter('parcels-highlight', ['==', 'id', '']);
-                // Reset visibility of all layers
-                map.current.setFilter('parcels-fill', null);
-                map.current.setFilter('parcels-outline', null);
-                map.current.setFilter('parcels-labels', null);
+                // Reset visibility: Hide all again when search is cleared
+                map.current.setFilter('parcels-fill', ['==', 'id', '']);
+                map.current.setFilter('parcels-outline', ['==', 'id', '']);
+                map.current.setFilter('parcels-labels', ['==', 'id', '']);
             }
             return;
         }
@@ -441,8 +444,8 @@ export function MapView({
                                 className="px-4 py-3 border-b border-secondary-100 dark:border-secondary-700 last:border-0 hover:bg-secondary-50 dark:hover:bg-secondary-700 cursor-pointer flex items-start gap-3 transition-colors"
                             >
                                 <div className={`mt-1 p-1 rounded ${result.properties?.status === 'active' ? 'bg-green-100 text-green-600' :
-                                        result.properties?.status === 'under_review' ? 'bg-yellow-100 text-yellow-600' :
-                                            result.properties?.status === 'disputed' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'
+                                    result.properties?.status === 'under_review' ? 'bg-yellow-100 text-yellow-600' :
+                                        result.properties?.status === 'disputed' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'
                                     }`}>
                                     <MapPin size={14} />
                                 </div>
@@ -451,8 +454,8 @@ export function MapView({
                                         {result.properties?.owner}
                                         <span className="text-secondary-400 font-normal">({result.properties?.id})</span>
                                         <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${result.properties?.status === 'active' ? 'bg-green-100 text-green-700' :
-                                                result.properties?.status === 'under_review' ? 'bg-yellow-100 text-yellow-700' :
-                                                    result.properties?.status === 'disputed' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
+                                            result.properties?.status === 'under_review' ? 'bg-yellow-100 text-yellow-700' :
+                                                result.properties?.status === 'disputed' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
                                             }`}>
                                             {result.properties?.status}
                                         </span>

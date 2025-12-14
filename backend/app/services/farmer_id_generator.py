@@ -290,6 +290,20 @@ class FarmerIDGenerator:
             farmer_id=farmer.id
         ).first()
         
+        # Check for Active Mutations (Benefit Provisioning Check)
+        # Unified Land API Flag: Indicates if mutation is in progress
+        from app.models.ownership_transfer import OwnershipTransfer
+        
+        active_mutations = db.query(OwnershipTransfer).filter(
+            or_(
+                OwnershipTransfer.from_farmer_id == farmer.id,
+                OwnershipTransfer.to_farmer_id == farmer.id
+            ),
+            OwnershipTransfer.status.notin_(["COMPLETED", "REJECTED"])
+        ).count()
+        
+        mutation_pending = active_mutations > 0
+
         return {
             "farmer_id": str(farmer.id),
             "name": farmer.name,
@@ -300,5 +314,7 @@ class FarmerIDGenerator:
             "aadhaar_masked": f"XXXX XXXX {consent.aadhaar_last_4}" if consent else None,
             "total_holdings": len(holdings),
             "total_area": round(total_area, 2),
-            "holdings": holdings
+            "holdings": holdings,
+            "mutation_pending": mutation_pending, # Unified API Flag
+            "active_mutations_count": active_mutations
         }

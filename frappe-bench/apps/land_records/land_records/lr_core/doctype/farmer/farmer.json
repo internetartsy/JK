@@ -53,6 +53,14 @@
             "label": "Confidence"
         },
         {
+            "fieldname": "verification_status",
+            "fieldtype": "Select",
+            "label": "Verification Status",
+            "options": "Pending\nAuto Approved\nManual Verification Required\nRejected",
+            "default": "Pending",
+            "read_only": 1
+        },
+        {
             "fieldname": "consent_flags",
             "fieldtype": "JSON",
             "label": "Consent Flags"

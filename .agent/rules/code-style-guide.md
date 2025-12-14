@@ -128,6 +128,22 @@ Responsibilities:
 
 ---
 
+### 7. docker_host.md
+Defines the container orchestration and host environment.
+
+Scope:
+- Docker Compose configurations (Dev/Prod)
+- Network topology and service discovery
+- Volume management and persistence logic
+- Host machine integration (gateways, ports)
+
+Responsibilities:
+- Managed runtime environment
+- Ensure service connectivity
+- Handle environment-specific toggles
+
+---
+
 ## Development Rules
 
 - No direct frontend → database access

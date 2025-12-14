@@ -61,32 +61,91 @@ def process_ocr_document_task(object_name: str, bucket_name: str = "scans", doc_
         
         redis_client.set(f"job:{job_id}", json.dumps({"status": "processing", "progress": 80, "message": "Analyzing Confidence"}))
 
-        routing_result = frappe_sync.analyze_and_route_review(
-            doc_id=ocr_result["doc_id"], # Should match job_id ideally
-            doc_type=doc_type,
-            fields=fields,
-            field_confidences=field_confidences,
-            overall_confidence=ocr_result["confidence"],
-            is_handwritten=False, # TODO: Detect handwriting or pass as arg
-            has_tables=has_tables,
-            table_confidence=table_confidence,
-            file_content=image_data,
-            file_name=object_name
-        )
+        if doc_type.lower() in ["mutation", "registry", "transfer", "sale"]:
+            logger.info(f"Routing {doc_type} document to Transfer Sync workflow")
+            routing_result = frappe_sync.sync_transfer_to_frappe(
+                doc_id=ocr_result["doc_id"],
+                fields=fields,
+                file_content=image_data,
+                file_name=object_name
+            )
+        else:
+            # Handle Multi-Row (e.g. Split Jamabandi)
+            # If extractor provided 'data_rows', standard flow might need to process each.
+            # Current implementation of analyze_and_route_review expects one doc.
+            # We will route the MAIN fields, then optionally background sync the others if needed.
+            
+            # For now, just route the main one to avoid spamming Review/Frappe with sub-tasks
+            # OR loop and aggregate results? 
+            # Let's loop but only Create Review for the first/aggregate?
+            # Decision: Process ALL rows to ensure all Khasras are synced if auto-sync is on.
+            
+            rows_to_process = ocr_service.extract_fields(ocr_result, doc_type).get("data_rows", [fields])
+            
+            # We'll return the result of the LAST processed row as the "task result", 
+            # or merge them. For simplicity, we process the first one as "Master" for review,
+            # and others as "Auto-Sync" candidates.
+            
+            # Actually, to be safe and simple: just process the extracted 'fields' (which defaults to row 1).
+            # If the user wants FULL expansion, we need a Loop.
+            # Let's enable Loop for 'girdawari' type where Khasra expansion is critical.
+            
+            if doc_type == "girdawari" and len(rows_to_process) > 1:
+                results = []
+                for idx, row in enumerate(rows_to_process):
+                    sub_doc_id = f"{ocr_result['doc_id']}_{idx}"
+                    res = frappe_sync.analyze_and_route_review(
+                        doc_id=sub_doc_id, 
+                        doc_type=doc_type,
+                        fields=row,
+                        field_confidences=field_confidences,
+                        overall_confidence=ocr_result["confidence"],
+                        is_handwritten=False,
+                        has_tables=has_tables,
+                        table_confidence=table_confidence,
+                        file_content=image_data if idx == 0 else None, # Only attach file to first?
+                        file_name=object_name
+                    )
+                    results.append(res)
+                routing_result = results[0] # Return first for task status
+                routing_result["sub_tasks_count"] = len(results)
+            else:
+                 routing_result = frappe_sync.analyze_and_route_review(
+                    doc_id=ocr_result["doc_id"], 
+                    doc_type=doc_type,
+                    fields=fields,
+                    field_confidences=field_confidences,
+                    overall_confidence=ocr_result["confidence"],
+                    is_handwritten=False, 
+                    has_tables=has_tables,
+                    table_confidence=table_confidence,
+                    file_content=image_data,
+                    file_name=object_name
+                )
+
+        
+        logger.info(f"DEBUG: routing_result type: {type(routing_result)}")
+        logger.info(f"DEBUG: ocr_result keys: {ocr_result.keys()}")
+
+        # Ensure we have a dict for 'ocr' even if it's None in the result
+        ocr_data = ocr_result.get("ocr") or {}
+        raw_text_snippet = ocr_data.get("text", "")[:100] + "..." if ocr_data.get("text") else ""
 
         final_result = {
             "doc_id": job_id,
             "fields": fields,
-            "confidence": ocr_result["confidence"],
+            "confidence": ocr_result.get("confidence", 0.0),
             "field_confidences": field_confidences,
             "review_routing": routing_result,
-            "raw_text": ocr_result.get("ocr", {}).get("text", "")[:100] + "..." # Truncate for Redis
+            "raw_text": raw_text_snippet
         }
         
         # Update Status: Completed
         redis_client.set(f"job:{job_id}", json.dumps({"status": "completed", "progress": 100, "result": final_result}))
         
-        logger.info(f"Task {job_id} completed successfully. Review Required: {routing_result.get('needs_review')}")
+        # Safe access for logging
+        needs_review = routing_result.get("analysis", {}).get("needs_review") if routing_result else "Unknown"
+        logger.info(f"Task {job_id} completed successfully. Review Required: {needs_review}")
         return final_result
         
     except Exception as e:

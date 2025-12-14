@@ -15,8 +15,13 @@ class Person(Base):
     
     total_landholding_hectares = Column(Float, default=0.0)
     dispute_status = Column(String, default="clear") # clear, disputed, etc.
+    first_name = Column(String, nullable=True) # Alias for convenience if needed
+    father_name = Column(String, nullable=True) # father_or_guardian_name
+    address = Column(String, nullable=True)
+    district = Column(String, index=True, nullable=True)
+    village = Column(String, index=True, nullable=True)
     aadhaar_verified = Column(Boolean, default=False)
-    
+
     # Original fields
     confidence = Column(Float, default=0.0)
     consent_flags = Column(JSON, default={})
