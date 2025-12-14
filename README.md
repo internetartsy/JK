@@ -20,7 +20,21 @@ The system allows **Field Operators** to collect land data offline (Mobile), **V
 4.  **Backend (FastAPI)**: Core business logic, Geospatial analysis (PostGIS), and Sync orchestration.
 5.  **ERP (Frappe/ERPNext)**: The legal System of Record (RoR, JAMABANDI).
 
+
 ---
+
+## ⚡ Recent Updates (Dec 14, 2025)
+
+The `jk_sub` branch has been consolidated with major fixes and production-ready configurations:
+
+*   **Production Deployment**: Added `docker-compose.prod.yml`, Nginx production configs, and optimized Dockerfiles.
+*   **Security Gateway**: Fixed rate-limiting middleware (`ratelimit.rs`) and updated main entry points.
+*   **Mobile App**: Enhanced `farmerService.ts` for robust offline sync and error handling.
+*   **Backend**: Corrected API endpoints in `main.py` for smoother integration.
+*   **Documentation**: Completely overhauled Architecture Stack docs to **V2 Standards** with detailed schemas and logic flows.
+
+---
+
 
 ## 🚀 Quick Start (Docker)
 
