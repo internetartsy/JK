@@ -57,16 +57,17 @@ where
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let srv = self.service.clone();
         
-        // Extract User ID (sub) early
+        // Extract User ID (sub) with Signature Verification
         let user_id = if let Some(auth_header) = req.headers().get("Authorization") {
             if let Ok(auth_str) = auth_header.to_str() {
                 if auth_str.starts_with("Bearer ") {
                      let token = &auth_str[7..];
                      let mut validation = Validation::new(Algorithm::HS256);
-                     validation.insecure_disable_signature_validation();
-                     validation.validate_exp = false;
-                     // We use a dummy key because signature is ignored
-                     decode::<Claims>(token, &DecodingKey::from_secret(b""), &validation)
+                     // Enforce expiration check by default
+                     
+                     let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "supersecretjwt".to_string());
+                     
+                     decode::<Claims>(token, &DecodingKey::from_secret(jwt_secret.as_bytes()), &validation)
                         .map(|data| data.claims.sub)
                         .unwrap_or_else(|_| "invalid_token".to_string())
                 } else {

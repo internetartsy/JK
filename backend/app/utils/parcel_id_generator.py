@@ -208,10 +208,10 @@ DISTRICT_NAMES = {v: k for k, v in DISTRICT_CODES.items()}
 
 if __name__ == "__main__":
     # Example usage
-    generator = LandParcelIDGenerator()
+    generator = ULPINGenerator()
     
     # Generate ID from coordinates
-    parcel_id = generator.generate_from_coordinates(
+    parcel_id = generator.generate_ulpin(
         latitude=32.8594,
         longitude=74.7238,
         district_code="01",  # Jammu
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     print(f"Generated Parcel ID: {parcel_id}")
     
     # Parse the ID
-    parsed = generator.parse_parcel_id(parcel_id)
+    parsed = generator.parse_ulpin(parcel_id)
     print(f"\nParsed Data:")
     for key, value in parsed.items():
         print(f"  {key}: {value}")

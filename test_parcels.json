@@ -1,0 +1,102 @@
+[
+  {
+    "parcel_id": "01051223231785",
+    "formatted_id": "0105-1223-2317-85",
+    "name": "Jammu Urban Plot",
+    "district": "Jammu",
+    "district_code": "01",
+    "tehsil_code": "05",
+    "village_id": "VIL_JAM_001",
+    "khasra_number": "45/2",
+    "centroid": {
+      "latitude": 32.734,
+      "longitude": 74.854
+    },
+    "decoded": {
+      "latitude": 32.733873,
+      "longitude": 74.853785
+    },
+    "geojson": "{\"type\": \"Polygon\", \"coordinates\": [[[74.85, 32.73], [74.86, 32.73], [74.86, 32.74], [74.85, 32.74], [74.85, 32.73]]]}",
+    "sql_insert": "INSERT INTO landparcel (id, parcel_id, village_id, khasra_number, geometry, tehsil_code)\nVALUES (\n    gen_random_uuid(),\n    '01051223231785',\n    'VIL_JAM_001',\n    '45/2',\n    ST_GeomFromText('POLYGON((74.85 32.73, 74.86 32.73, 74.86 32.74, 74.85 32.74, 74.85 32.73)\", 4326),\n    '05'\n);"
+  },
+  {
+    "parcel_id": "11023472224294",
+    "formatted_id": "1102-3472-2242-94",
+    "name": "Srinagar Agricultural Land",
+    "district": "Srinagar",
+    "district_code": "11",
+    "tehsil_code": "02",
+    "village_id": "VIL_SRI_042",
+    "khasra_number": "123/A",
+    "centroid": {
+      "latitude": 34.084,
+      "longitude": 74.794
+    },
+    "decoded": {
+      "latitude": 34.083408,
+      "longitude": 74.793779
+    },
+    "geojson": "{\"type\": \"Polygon\", \"coordinates\": [[[74.79, 34.08], [74.8, 34.08], [74.8, 34.09], [74.79, 34.09], [74.79, 34.08]]]}",
+    "sql_insert": "INSERT INTO landparcel (id, parcel_id, village_id, khasra_number, geometry, tehsil_code)\nVALUES (\n    gen_random_uuid(),\n    '11023472224294',\n    'VIL_SRI_042',\n    '123/A',\n    ST_GeomFromText('POLYGON((74.79 34.08, 74.8 34.08, 74.8 34.09, 74.79 34.09, 74.79 34.08)\", 4326),\n    '02'\n);"
+  },
+  {
+    "parcel_id": "14012889267954",
+    "formatted_id": "1401-2889-2679-54",
+    "name": "Anantnag Valley Parcel",
+    "district": "Anantnag",
+    "district_code": "14",
+    "tehsil_code": "01",
+    "village_id": "VIL_ANA_015",
+    "khasra_number": "67/1",
+    "centroid": {
+      "latitude": 33.734,
+      "longitude": 75.144
+    },
+    "decoded": {
+      "latitude": 33.733573,
+      "longitude": 75.143414
+    },
+    "geojson": "{\"type\": \"Polygon\", \"coordinates\": [[[75.14, 33.73], [75.15, 33.73], [75.15, 33.74], [75.14, 33.74], [75.14, 33.73]]]}",
+    "sql_insert": "INSERT INTO landparcel (id, parcel_id, village_id, khasra_number, geometry, tehsil_code)\nVALUES (\n    gen_random_uuid(),\n    '14012889267954',\n    'VIL_ANA_015',\n    '67/1',\n    ST_GeomFromText('POLYGON((75.14 33.73, 75.15 33.73, 75.15 33.74, 75.14 33.74, 75.14 33.73)\", 4326),\n    '01'\n);"
+  },
+  {
+    "parcel_id": "18033672166776",
+    "formatted_id": "1803-3672-1667-76",
+    "name": "Baramulla Orchard",
+    "district": "Baramulla",
+    "district_code": "18",
+    "tehsil_code": "03",
+    "village_id": "VIL_BAR_028",
+    "khasra_number": "89/B",
+    "centroid": {
+      "latitude": 34.204,
+      "longitude": 74.334
+    },
+    "decoded": {
+      "latitude": 34.20342,
+      "longitude": 74.333733
+    },
+    "geojson": "{\"type\": \"Polygon\", \"coordinates\": [[[74.33, 34.2], [74.34, 34.2], [74.34, 34.21], [74.33, 34.21], [74.33, 34.2]]]}",
+    "sql_insert": "INSERT INTO landparcel (id, parcel_id, village_id, khasra_number, geometry, tehsil_code)\nVALUES (\n    gen_random_uuid(),\n    '18033672166776',\n    'VIL_BAR_028',\n    '89/B',\n    ST_GeomFromText('POLYGON((74.33 34.2, 74.34 34.2, 74.34 34.21, 74.33 34.21, 74.33 34.2)\", 4326),\n    '03'\n);"
+  },
+  {
+    "parcel_id": "03040656312907",
+    "formatted_id": "0304-0656-3129-07",
+    "name": "Kathua Border Plot",
+    "district": "Kathua",
+    "district_code": "03",
+    "tehsil_code": "04",
+    "village_id": "VIL_KAT_007",
+    "khasra_number": "12/3",
+    "centroid": {
+      "latitude": 32.394,
+      "longitude": 75.504
+    },
+    "decoded": {
+      "latitude": 32.393639,
+      "longitude": 75.50345
+    },
+    "geojson": "{\"type\": \"Polygon\", \"coordinates\": [[[75.5, 32.39], [75.51, 32.39], [75.51, 32.4], [75.5, 32.4], [75.5, 32.39]]]}",
+    "sql_insert": "INSERT INTO landparcel (id, parcel_id, village_id, khasra_number, geometry, tehsil_code)\nVALUES (\n    gen_random_uuid(),\n    '03040656312907',\n    'VIL_KAT_007',\n    '12/3',\n    ST_GeomFromText('POLYGON((75.5 32.39, 75.51 32.39, 75.51 32.4, 75.5 32.4, 75.5 32.39)\", 4326),\n    '04'\n);"
+  }
+]

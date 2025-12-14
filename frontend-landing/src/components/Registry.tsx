@@ -82,6 +82,7 @@ export function Registry() {
         setShowUploadModal(true);
         setIsUploading(true);
         setUploadProgress(0);
+        setUploadStep('upload'); // Step 1: Upload
         setAnalysisLog(['Initializing Upload...']);
 
         try {
@@ -92,6 +93,7 @@ export function Registry() {
             await new Promise(r => setTimeout(r, 1000));
             setUploadProgress(20);
             setAnalysisLog(prev => [...prev, '✓ PDF Uploaded Successfully']);
+            setUploadStep('ocr'); // Step 2: OCR
 
             await new Promise(r => setTimeout(r, 800));
             setUploadProgress(40);
@@ -104,17 +106,20 @@ export function Registry() {
 
             await new Promise(r => setTimeout(r, 1000));
             setUploadProgress(70);
+            setUploadStep('ulpin'); // Step 3: Gen ULPIN
             setAnalysisLog(prev => [...prev, '• Term Mapping: "Kasht" -> "Cultivator", "Sakin" -> "Resident"']);
             setAnalysisLog(prev => [...prev, '• Translating Urdu -> English: "رمیش کمار" -> "Ramesh Kumar"']);
 
             await new Promise(r => setTimeout(r, 1000));
             setUploadProgress(85);
+            setUploadStep('save'); // Step 4: Sync Frappe
             setAnalysisLog(prev => [...prev, '• GeoJSON Extracted: Polygon((74.7 32.7, ...))']);
             setAnalysisLog(prev => [...prev, '• Validating Khasra Number vs Village Record']);
 
             await uploadPromise; // Wait for real success
 
             setUploadProgress(100);
+            setUploadStep('done'); // Step 5: Complete
             setAnalysisLog(prev => [...prev, '✓ Auto-Generated ULPIN: JK-G-82910']);
             setAnalysisLog(prev => [...prev, '✓ Data Verified']);
             setAnalysisLog(prev => [...prev, '✓ Sent to Queued for Review (Status: Under Review)']);
@@ -131,6 +136,7 @@ export function Registry() {
         } finally {
             setIsUploading(false);
             e.target.value = '';
+            // Reset step after delay if needed, but keeping it 'done' allows user to see success state
         }
     };
 

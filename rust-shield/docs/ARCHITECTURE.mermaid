@@ -1,0 +1,24 @@
+graph TD
+    User[User Client] -->|HTTPS| Gateway[Rust GeoShield Gateway]
+    
+    subgraph Rust Gateway
+        Auth[Auth Middleware]
+        Headers[Security Headers]
+        RL[Rate Limit Middleware]
+        Audit[Audit Log Middleware]
+        Proxy[Proxy Handler]
+        
+        Gateway --> Auth
+        Auth -->|Valid| Headers
+        Headers --> RL
+        RL -->|Allowed| Audit
+        Audit --> Proxy
+    end
+    
+    Proxy -->|/api/v1| API[FastAPI Backend]
+    Proxy -->|/app| Frappe[ERPNext]
+    Proxy -->|/| Frontend[Vite PWA]
+    
+    API --> PostGIS[(PostgreSQL/PostGIS)]
+    
+    Auth -.->|Verify| Keycloak[Keycloak IDP]

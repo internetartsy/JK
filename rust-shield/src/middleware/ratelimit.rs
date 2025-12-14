@@ -5,21 +5,16 @@ use actix_web::{
 use actix_web::dev::{Service, Transform};
 use futures::future::{ok, Ready, LocalBoxFuture};
 use std::rc::Rc;
-use governor::{Quota, RateLimiter, Jitter};
-use governor::state::{InMemoryState, NotKeyed};
+use governor::{Quota, RateLimiter};
+use governor::state::{InMemoryState, Keyed};
+use governor::clock::DefaultClock;
 use std::num::NonZeroU32;
 use log::warn;
 
-// We will use a simple global rate limiter for this example, 
-// or a keyed one if we want per-IP (more complex to share clean state in Actix middleware w/o Arc<Mutex>)
-// For simplicity in this "MVP", we'll use a globally shared RateLimiter wrapped in a structural middleware.
-// But Keyed rate limiting is better. Let's try to do it properly with per-IP.
-
-// Actix middleware for Governor is often tricky because of the valid lifetime requirements.
-// We'll use a simplified approach: specific strict quota.
+// Refactored to use Keyed Rate Limiter (Per IP)
+// Key type is String (IP Address)
 
 pub struct RateLimit;
-
 
 impl<S, B> Transform<S, ServiceRequest> for RateLimit
 where
@@ -34,9 +29,12 @@ where
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        // Allow 20 requests per second with burst of 50
+        // Allow 20 requests per second per IP with burst of 50
         let quota = Quota::per_second(NonZeroU32::new(20).unwrap()).allow_burst(NonZeroU32::new(50).unwrap());
-        let limiter = Rc::new(RateLimiter::direct(quota));
+        // Use a Keyed rate limiter. Note: Actix runs multiple threads, but `Rc` confines this middleware instance to one thread.
+        // Governor handles internal state thread-safely with Arc usually, but here we are creating one limiter per worker thread if using Rc.
+        // This effectively means 20 req/s/IP *per worker*. This is acceptable for high perf.
+        let limiter = Rc::new(RateLimiter::keyed(quota));
         
         ok(RateLimitMiddleware {
             service: Rc::new(service),
@@ -47,7 +45,8 @@ where
 
 pub struct RateLimitMiddleware<S> {
     service: Rc<S>,
-    limiter: Rc<RateLimiter<NotKeyed, InMemoryState, governor::clock::DefaultClock>>,
+    // Keyed: Key is String (IP), State is InMemoryState
+    limiter: Rc<RateLimiter<String, Keyed<String>, DefaultClock>>,
 }
 
 impl<S, B> Service<ServiceRequest> for RateLimitMiddleware<S>
@@ -67,11 +66,14 @@ where
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let srv = self.service.clone();
         let limiter = self.limiter.clone();
+        
+        // Extract IP for rate limiting key
+        let ip = req.peer_addr().map(|a| a.ip().to_string()).unwrap_or_else(|| "unknown".to_string());
 
         Box::pin(async move {
-            // Check Rate Limit
-            if let Err(_negative) = limiter.check() {
-                warn!("Rate limit exceeded");
+            // Check Rate Limit for this IP
+            if let Err(_negative) = limiter.check_key(&ip) {
+                warn!("Rate limit exceeded for IP: {}", ip);
                  return Err(actix_web::error::ErrorTooManyRequests("Rate limit exceeded"));
             }
 
@@ -79,3 +81,4 @@ where
         })
     }
 }
+
