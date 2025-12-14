@@ -69,10 +69,11 @@ Implemented in `middleware/headers.rs` to meet OWASP recommendations:
 
 ## 4. Endpoints & Configuration
 *   **Port**: `8090` (Exposed as Edge)
-*   **Internal Routing**:
-    *   Backend: `http://backend:8000`
-    *   Frappe: `http://frappe:8000`
-    *   Frontend: `http://frontend:5173`
+*   **Internal Routing** (Environment Configured):
+    *   Backend: `${BACKEND_URL}` (Default: `http://backend:8000`)
+    *   Frappe: `${FRAPPE_URL}` (Default: `http://erp-web:8000`)
+    *   Frontend: `${FRONTEND_URL}` (Default: `http://frontend:5173`)
+*   **Local Dev Support**: Supports `host.docker.internal` for hybrid debugging.
 
 ## 5. Deployment
 *   **Docker Service**: `jk-security-gateway`
