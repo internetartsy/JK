@@ -140,6 +140,7 @@ docker run --rm --link jk-minio:minio -v $(pwd)/backup:/backup minio/mc mirror -
 docker cp jk-redis:/data/dump.rdb ./backup/redis_dump.rdb
 ```
 
+
 ### 9.2 Restore (Import)
 Run these commands on the **Target** server:
 ```bash
@@ -149,4 +150,43 @@ cat dump_*.sql | docker exec -i jk-postgres psql -U jk_user
 # 2. File Store Restore
 docker run --rm --link jk-minio:minio -v $(pwd)/backup:/backup minio/mc mirror --overwrite /backup/files minio/agristack
 ```
+
+## 10. Configuration Reference (Snippet)
+*Excerpt from `docker-compose.yml` defining the core stack:*
+
+```yaml
+services:
+  # Rust Security Gateway
+  security-gateway:
+    build: ./rust-shield
+    ports:
+      - "8090:8090"
+    environment:
+      DATABASE_URL: postgresql://jk_user:${DB_PASSWORD}@postgres:5432/jk_land_records
+      BACKEND_URL: ${BACKEND_URL:-http://host.docker.internal:8000}
+      FRAPPE_URL: ${FRAPPE_URL:-http://erp-web:8000}
+    depends_on:
+      - postgres
+      - redis
+
+  # FastAPI Backend
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+
+  # ERPNext Instance
+  erp-web:
+    image: frappe/erpnext:latest
+    ports:
+      - "8080:8000"
+    volumes:
+      - erp_sites:/home/frappe/frappe-bench/sites
+```
+
 

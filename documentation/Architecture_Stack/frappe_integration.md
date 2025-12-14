@@ -92,7 +92,39 @@ Core registry record.
 *   **API Path**: `/api/resource/{doctype}`
 *   **Custom Methods**: `/api/method/land_records.api.sync_parcel`
 
+
 ## 5. Implementation Status
 *   **Sync Service**: `backend/app/services/frappe_sync/frappe_client.py`
 *   **Auth**: Token-based (API Key / Secret).
+
+## 6. Code Reference (Python Client)
+*Core logic for talking to Frappe from FastAPI:*
+
+```python
+class FrappeClient:
+    """Client for communicating with Frappe API"""
+    
+    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None, api_secret: Optional[str] = None):
+        self.base_url = base_url or os.getenv("FRAPPE_URL", "http://frappe:8000")
+        self.api_key = api_key or os.getenv("FRAPPE_API_KEY")
+        self.api_secret = api_secret or os.getenv("FRAPPE_API_SECRET")
+        
+        self.session = requests.Session()
+        if self.api_key and self.api_secret:
+            self.session.headers.update({
+                "Authorization": f"token {self.api_key}:{self.api_secret}"
+            })
+    
+    def get_doc(self, doctype: str, name: str) -> Dict[str, Any]:
+        """Get a single document from Frappe"""
+        url = f"{self.base_url}/api/resource/{doctype}/{name}"
+        try:
+            response = self.session.get(url)
+            response.raise_for_status()
+            return response.json().get("data", {})
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error fetching {doctype} {name}: {e}")
+            return {}
+```
+
 
