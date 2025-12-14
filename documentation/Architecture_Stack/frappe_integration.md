@@ -7,18 +7,65 @@ Defines Frappe (ERPNext) as the **System of Record** for Land Records.
 
 ## 2. Architecture: Logical Flow
 ```mermaid
-graph LR
-    subgraph External
-        API[FastAPI Backend :8000]
+graph TD
+    %% -- User Layer --
+    User([User / Device])
+    Mobile([Mobile App (Offline First)])
+    
+    %% -- Edge Layer --
+    subgraph Edge_Infrastructure [Edge Infrastructure]
+        Nginx[Nginx Reverse Proxy\n(Port 80/443)]
+        Gateway[Rust Security Gateway\n(Port 8090)]
     end
-    subgraph Frappe Ecosystem
-        WEB[ERPNext Web :8080]
-        DB[(MariaDB :3306)]
-        REDIS[Redis :6379]
+
+    %% -- Application Layer --
+    subgraph App_Layer [Application Systems]
+        Frontend[React Frontend\n(Static Serve)]
+        Backend[FastAPI Backend\n(OCR / Spatial / Dedupe)]
+        Frappe[Frappe / ERPNext\n(System of Record)]
     end
-    API -->|REST API| WEB
-    WEB -->|Webhooks| API
-    WEB -->|ORM| DB
+
+    %% -- Data Intelligence Layer --
+    subgraph Intelligence [Data Intelligence & Processing]
+        OCR_Worker[OCR Engine\n(Tesseract/EasyOCR)]
+        Dedupe[Data Cleaning Service\n(Python Algorithm)]
+        Geo_Engine[Spatial Analysis\n(PostGIS/Shapely)]
+    end
+
+    %% -- Persistence Layer --
+    subgraph Data_Layer [Persistence]
+        PSQL[(PostgreSQL + PostGIS)]
+        Redis[(Redis Cache)]
+        MinIO[(MinIO Object Storage)]
+        MariaDB[(MariaDB - Frappe)]
+    end
+
+    %% -- Flows --
+    User -->|HTTPS| Nginx
+    Mobile -->|HTTPS| Nginx
+
+    Nginx -->|/ (Root)| Frontend
+    Nginx -->|/api| Gateway
+    Nginx -->|/app| Frappe
+
+    Gateway -->|Auth & Rate Limit| Backend
+    Gateway -->|Proxy Legacy| Frappe
+    
+    Backend -->|Read/Write| PSQL
+    Backend -->|Cache| Redis
+    Backend -->|Store Files| MinIO
+    
+    Frappe -->|System Records| MariaDB
+    
+    %% -- Logic Flows --
+    Backend -.->|Async Task| OCR_Worker
+    OCR_Worker -->|Extract Text| Backend
+    Backend -->|Sync Result| Frappe
+    
+    Frappe -.->|Trigger| Dedupe
+    Dedupe -->|Find Clusters| Frappe
+    
+    Mobile -->|Sync Offline Data| Backend
 ```
 
 ### 3.1 Core Doctypes (Reference List)

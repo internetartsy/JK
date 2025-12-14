@@ -5,22 +5,65 @@ The Rust Gateway acts as the secure ingress for the AgriStack platform, enforcin
 
 ## 2. Architecture & Flow
 ```mermaid
-flowchart TD
-    Client -->|HTTPS| Gateway[Rust Security Gateway :8090]
-    subgraph Gateway Security Layers
-        Auth[Authentication Middleware]
-        Headers[Security Headers]
-        Rate[Rate Limiting]
-        Audit[Audit Logging]
+graph TD
+    %% -- User Layer --
+    User([User / Device])
+    Mobile([Mobile App (Offline First)])
+    
+    %% -- Edge Layer --
+    subgraph Edge_Infrastructure [Edge Infrastructure]
+        Nginx[Nginx Reverse Proxy\n(Port 80/443)]
+        Gateway[Rust Security Gateway\n(Port 8090)]
     end
-    Gateway --> Auth --> Headers --> Rate --> Audit
-    Audit -->|Valid| Router{Router}
+
+    %% -- Application Layer --
+    subgraph App_Layer [Application Systems]
+        Frontend[React Frontend\n(Static Serve)]
+        Backend[FastAPI Backend\n(OCR / Spatial / Dedupe)]
+        Frappe[Frappe / ERPNext\n(System of Record)]
+    end
+
+    %% -- Data Intelligence Layer --
+    subgraph Intelligence [Data Intelligence & Processing]
+        OCR_Worker[OCR Engine\n(Tesseract/EasyOCR)]
+        Dedupe[Data Cleaning Service\n(Python Algorithm)]
+        Geo_Engine[Spatial Analysis\n(PostGIS/Shapely)]
+    end
+
+    %% -- Persistence Layer --
+    subgraph Data_Layer [Persistence]
+        PSQL[(PostgreSQL + PostGIS)]
+        Redis[(Redis Cache)]
+        MinIO[(MinIO Object Storage)]
+        MariaDB[(MariaDB - Frappe)]
+    end
+
+    %% -- Flows --
+    User -->|HTTPS| Nginx
+    Mobile -->|HTTPS| Nginx
+
+    Nginx -->|/ (Root)| Frontend
+    Nginx -->|/api| Gateway
+    Nginx -->|/app| Frappe
+
+    Gateway -->|Auth & Rate Limit| Backend
+    Gateway -->|Proxy Legacy| Frappe
     
-    Router -->|/api/v1/*| Backend[FastAPI Backend :8000]
-    Router -->|/app/*| ERP[Frappe ERPNext :8000]
-    Router -->|/*| Frontend[React PWA :5173]
+    Backend -->|Read/Write| PSQL
+    Backend -->|Cache| Redis
+    Backend -->|Store Files| MinIO
     
-    Audit -.->|Log Stream| Stdout[JSON Logs]
+    Frappe -->|System Records| MariaDB
+    
+    %% -- Logic Flows --
+    Backend -.->|Async Task| OCR_Worker
+    OCR_Worker -->|Extract Text| Backend
+    Backend -->|Sync Result| Frappe
+    
+    Frappe -.->|Trigger| Dedupe
+    Dedupe -->|Find Clusters| Frappe
+    
+    Mobile -->|Sync Offline Data| Backend
 ```
 
 ## 3. Security Implementation (ISO 27001 Compliant)

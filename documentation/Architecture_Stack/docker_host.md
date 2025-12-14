@@ -8,38 +8,64 @@ Orchestration of the entire microservice ecosystem using Docker Compose.
 ## 2. Architecture: Container Map
 ```mermaid
 graph TD
-    subgraph Host["Host Machine"]
-        NGINX[Nginx Gateway :80]
-        
-        subgraph "Application Layer"
-            FASTAPI[FastAPI Backend :8000]
-            FRAPPE[Frappe ERPNext :8080]
-            RUST[Rust Shield :8090]
-            WORKER[Celery Worker]
-            FRONT[Frontend Static :3000]
-        end
-        
-        subgraph "Data Layer"
-            PG[(PostGIS :5432)]
-            REDIS[(Redis :6379)]
-            MINIO[(MinIO :9000)]
-            ES[(Elasticsearch :9200)]
-        end
+    %% -- User Layer --
+    User([User / Device])
+    Mobile([Mobile App (Offline First)])
+    
+    %% -- Edge Layer --
+    subgraph Edge_Infrastructure [Edge Infrastructure]
+        Nginx[Nginx Reverse Proxy\n(Port 80/443)]
+        Gateway[Rust Security Gateway\n(Port 8090)]
     end
 
-    NGINX --> RUST
-    RUST --> FASTAPI
-    RUST --> FRAPPE
-    RUST --> FRONT
+    %% -- Application Layer --
+    subgraph App_Layer [Application Systems]
+        Frontend[React Frontend\n(Static Serve)]
+        Backend[FastAPI Backend\n(OCR / Spatial / Dedupe)]
+        Frappe[Frappe / ERPNext\n(System of Record)]
+    end
+
+    %% -- Data Intelligence Layer --
+    subgraph Intelligence [Data Intelligence & Processing]
+        OCR_Worker[OCR Engine\n(Tesseract/EasyOCR)]
+        Dedupe[Data Cleaning Service\n(Python Algorithm)]
+        Geo_Engine[Spatial Analysis\n(PostGIS/Shapely)]
+    end
+
+    %% -- Persistence Layer --
+    subgraph Data_Layer [Persistence]
+        PSQL[(PostgreSQL + PostGIS)]
+        Redis[(Redis Cache)]
+        MinIO[(MinIO Object Storage)]
+        MariaDB[(MariaDB - Frappe)]
+    end
+
+    %% -- Flows --
+    User -->|HTTPS| Nginx
+    Mobile -->|HTTPS| Nginx
+
+    Nginx -->|/ (Root)| Frontend
+    Nginx -->|/api| Gateway
+    Nginx -->|/app| Frappe
+
+    Gateway -->|Auth & Rate Limit| Backend
+    Gateway -->|Proxy Legacy| Frappe
     
-    FASTAPI --> PG
-    FASTAPI --> REDIS
-    FASTAPI --> MINIO
-    FRAPPE --> PG
-    FRAPPE --> REDIS
+    Backend -->|Read/Write| PSQL
+    Backend -->|Cache| Redis
+    Backend -->|Store Files| MinIO
     
-    WORKER --> REDIS
-    WORKER --> FASTAPI
+    Frappe -->|System Records| MariaDB
+    
+    %% -- Logic Flows --
+    Backend -.->|Async Task| OCR_Worker
+    OCR_Worker -->|Extract Text| Backend
+    Backend -->|Sync Result| Frappe
+    
+    Frappe -.->|Trigger| Dedupe
+    Dedupe -->|Find Clusters| Frappe
+    
+    Mobile -->|Sync Offline Data| Backend
 ```
 
 ## 3. Configuration & Networking
