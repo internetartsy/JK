@@ -68,3 +68,5 @@ frappe-bench/config/
 !frontend/src/lib/
 local_archive/
 geo_log_data/
+target/
+rust-shield/target/

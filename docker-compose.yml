@@ -12,9 +12,9 @@ services:
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-supersecretkey}
       DATABASE_URL: postgresql://jk_user:${DB_PASSWORD:-password}@postgres:5432/jk_land_records
       REDIS_URL: redis://redis:6379
-      FRONTEND_URL: http://frontend:5173
-      BACKEND_URL: http://backend:8000
-      FRAPPE_URL: http://erp-web:8000
+      FRONTEND_URL: ${FRONTEND_URL:-http://frontend:5173}
+      BACKEND_URL: ${BACKEND_URL:-http://host.docker.internal:8000}
+      FRAPPE_URL: ${FRAPPE_URL:-http://erp-web:8000}
     depends_on:
       - postgres
       - redis
@@ -22,6 +22,8 @@ services:
       - ./certs/:/app/certs/
     networks:
       - jk-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
       interval: 30s
@@ -61,6 +63,7 @@ services:
   # FastAPI Backend
   backend:
     build: ./backend
+    profiles: ["backend"]
     container_name: jk-fastapi
     ports:
       - "8000:8000"
