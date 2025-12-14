@@ -52,7 +52,7 @@ class FarmerRegistrationRequest(BaseModel):
 
 class OfficerSearchRequest(BaseModel):
     """Officer portal search request"""
-    search_type: str = Field(..., regex="^(farmer_name|ulpin|ror_number|aadhaar_last4)$")
+    search_type: str = Field(..., pattern="^(farmer_name|ulpin|ror_number|aadhaar_last4)$")
     search_value: str
 
 

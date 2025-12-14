@@ -39,7 +39,7 @@ class AadhaarConsentRequest(BaseModel):
 class AadhaarVerificationRequest(BaseModel):
     """Request to verify Aadhaar via OTP/eKYC"""
     consent_id: str
-    verification_method: str = Field(..., regex="^(OTP|Biometric|eKYC)$")
+    verification_method: str = Field(..., pattern="^(OTP|Biometric|eKYC)$")
     verification_code: Optional[str] = None  # OTP code if method=OTP
 
 
@@ -62,7 +62,7 @@ class LinkageCreateRequest(BaseModel):
     ulpin: str
     farmer_id: str
     ror_number: str
-    ownership_type: str = Field(..., regex="^(Owner|Co-owner|Tenant|Lessee)$")
+    ownership_type: str = Field(..., pattern="^(Owner|Co-owner|Tenant|Lessee)$")
     ownership_share: Optional[float] = Field(None, ge=0, le=100)
 
 
