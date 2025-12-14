@@ -41,31 +41,31 @@ flowchart TD
     end
 
     %% -- Flows --
-    User -->|HTTPS| Nginx
-    Mobile -->|HTTPS| Nginx
+    User -->|"HTTPS"| Nginx
+    Mobile -->|"HTTPS"| Nginx
 
-    Nginx -->|/ (Root)| Frontend
-    Nginx -->|/api| Gateway
-    Nginx -->|/app| Frappe
+    Nginx -->|"/ (Root)"| Frontend
+    Nginx -->|"/api"| Gateway
+    Nginx -->|"/app"| Frappe
 
-    Gateway -->|Auth & Rate Limit| Backend
-    Gateway -->|Proxy Legacy| Frappe
+    Gateway -->|"Auth & Rate Limit"| Backend
+    Gateway -->|"Proxy Legacy"| Frappe
     
-    Backend -->|Read/Write| PSQL
-    Backend -->|Cache| Redis
-    Backend -->|Store Files| MinIO
+    Backend -->|"Read/Write"| PSQL
+    Backend -->|"Cache"| Redis
+    Backend -->|"Store Files"| MinIO
     
-    Frappe -->|System Records| MariaDB
+    Frappe -->|"System Records"| MariaDB
     
     %% -- Logic Flows --
-    Backend -.->|Async Task| OCR_Worker
-    OCR_Worker -->|Extract Text| Backend
-    Backend -->|Sync Result| Frappe
+    Backend -.->|"Async Task"| OCR_Worker
+    OCR_Worker -->|"Extract Text"| Backend
+    Backend -->|"Sync Result"| Frappe
     
-    Frappe -.->|Trigger| Dedupe
-    Dedupe -->|Find Clusters| Frappe
+    Frappe -.->|"Trigger"| Dedupe
+    Dedupe -->|"Find Clusters"| Frappe
     
-    Mobile -->|Sync Offline Data| Backend
+    Mobile -->|"Sync Offline Data"| Backend
 ```
 
 ## 3. Configuration & Networking
