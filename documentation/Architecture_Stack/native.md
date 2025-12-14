@@ -4,35 +4,35 @@
 ```mermaid
 flowchart TD
     %% -- User Layer --
-    User([User / Device])
-    Mobile([Mobile App (Offline First)])
+    User(["User / Device"])
+    Mobile(["Mobile App (Offline First)"])
     
     %% -- Edge Layer --
     subgraph Edge_Infrastructure [Edge Infrastructure]
-        Nginx[Nginx Reverse Proxy\n(Port 80/443)]
-        Gateway[Rust Security Gateway\n(Port 8090)]
+        Nginx["Nginx Reverse Proxy\n(Port 80/443)"]
+        Gateway["Rust Security Gateway\n(Port 8090)"]
     end
 
     %% -- Application Layer --
     subgraph App_Layer [Application Systems]
-        Frontend[React Frontend\n(Static Serve)]
-        Backend[FastAPI Backend\n(OCR / Spatial / Dedupe)]
-        Frappe[Frappe / ERPNext\n(System of Record)]
+        Frontend["React Frontend\n(Static Serve)"]
+        Backend["FastAPI Backend\n(OCR / Spatial / Dedupe)"]
+        Frappe["Frappe / ERPNext\n(System of Record)"]
     end
 
     %% -- Data Intelligence Layer --
     subgraph Intelligence [Data Intelligence & Processing]
-        OCR_Worker[OCR Engine\n(Tesseract/EasyOCR)]
-        Dedupe[Data Cleaning Service\n(Python Algorithm)]
-        Geo_Engine[Spatial Analysis\n(PostGIS/Shapely)]
+        OCR_Worker["OCR Engine\n(Tesseract/EasyOCR)"]
+        Dedupe["Data Cleaning Service\n(Python Algorithm)"]
+        Geo_Engine["Spatial Analysis\n(PostGIS/Shapely)"]
     end
 
     %% -- Persistence Layer --
     subgraph Data_Layer [Persistence]
-        PSQL[(PostgreSQL + PostGIS)]
-        Redis[(Redis Cache)]
-        MinIO[(MinIO Object Storage)]
-        MariaDB[(MariaDB - Frappe)]
+        PSQL[("PostgreSQL + PostGIS")]
+        Redis[("Redis Cache")]
+        MinIO[("MinIO Object Storage")]
+        MariaDB[("MariaDB - Frappe")]
     end
 
     %% -- Flows --
