@@ -1,4 +1,4 @@
-import client from './api';
+import client from '../api/client';
 
 export interface LandBucket {
     id: string;
@@ -35,12 +35,9 @@ export const FarmerService = {
         }
     },
 
-    // Legacy / Mock Methods (Preserved for compatibility if needed, but marked deprecated)
-    // Step 1: Discover Lands
+    // Discovery: Used during Signup to find potential lands
     discoverLands: async (aadhaar: string, mobile: string, name: string) => {
         try {
-            // Note: This endpoint (/farmer/discovery) likely needs to be implemented on backend 
-            // or replaced by the Consent Flow above.
             const response = await client.post('/farmer/discovery', {
                 aadhaar_number: aadhaar,
                 mobile_number: mobile,
@@ -53,7 +50,7 @@ export const FarmerService = {
         }
     },
 
-    // Step 3: Register
+    // Registration: Finalize account creation and claiming
     register: async (payload: {
         name: string;
         mobile_number: string;

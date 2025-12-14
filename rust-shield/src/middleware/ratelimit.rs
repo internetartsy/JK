@@ -5,8 +5,7 @@ use actix_web::{
 use actix_web::dev::{Service, Transform};
 use futures::future::{ok, Ready, LocalBoxFuture};
 use std::rc::Rc;
-use governor::{Quota, RateLimiter};
-use governor::state::{InMemoryState, Keyed};
+use governor::{Quota, RateLimiter, DefaultKeyedRateLimiter};
 use governor::clock::DefaultClock;
 use std::num::NonZeroU32;
 use log::warn;
@@ -45,8 +44,8 @@ where
 
 pub struct RateLimitMiddleware<S> {
     service: Rc<S>,
-    // Keyed: Key is String (IP), State is InMemoryState
-    limiter: Rc<RateLimiter<String, Keyed<String>, DefaultClock>>,
+    // Keyed: Key is String (IP)
+    limiter: Rc<DefaultKeyedRateLimiter<String>>,
 }
 
 impl<S, B> Service<ServiceRequest> for RateLimitMiddleware<S>

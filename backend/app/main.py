@@ -148,3 +148,10 @@ app.include_router(disputes.router, prefix="/api/v1")
 from app.api.v1 import spatial_analysis
 app.include_router(spatial_analysis.router, prefix="/api/v1")
 
+# Register missing routers
+from app.api.v1 import aadhaar_ror
+app.include_router(aadhaar_ror.router, prefix="/api/v1")
+
+from app.api.v1 import farmer_portal
+app.include_router(farmer_portal.router, prefix="/api/v1")
+

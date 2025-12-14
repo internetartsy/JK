@@ -133,6 +133,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::audit::AuditLog)
             .wrap(middleware::auth::Authentication)
             .route("/health", web::get().to(health_check))
+            .route("/api/health", web::get().to(health_check))
             .route("/db-check", web::get().to(db_check))
             .default_service(web::to(proxy_handler))
     })

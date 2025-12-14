@@ -1,0 +1,189 @@
+version: '3.9'
+
+services:
+  # Nginx Reverse Proxy (Edge)
+  nginx:
+    image: nginx:alpine
+    container_name: jk-nginx-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/prod.conf:/etc/nginx/nginx.conf:ro
+      # - ./certs:/etc/nginx/certs:ro # Uncomment for SSL
+    depends_on:
+      - frontend
+      - security-gateway
+      - erp-web
+    networks:
+      - jk-network
+
+  # Rust Security Gateway
+  security-gateway:
+    build: ./rust-shield
+    container_name: jk-security-gateway-prod
+    restart: always
+    ports:
+      - "8090:8090" # Expose internally, but also helpful for direct debug if protected by firewall
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-supersecretjwt}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-supersecretkey}
+      DATABASE_URL: postgresql://jk_user:${DB_PASSWORD:-password}@postgres:5432/jk_land_records
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: http://frontend:80
+      BACKEND_URL: http://backend:8000
+      FRAPPE_URL: http://erp-web:8000
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - jk-network
+
+  # React Frontend (Static Serve)
+  frontend:
+    build:
+      context: ./frontend-landing
+      dockerfile: Dockerfile.prod
+      args:
+        # Build-time variables for Vite
+        VITE_API_TARGET: /api
+        VITE_FRAPPE_TARGET: /app
+    container_name: jk-frontend-prod
+    restart: always
+    networks:
+      - jk-network
+
+  # FastAPI Backend
+  backend:
+    build: ./backend
+    container_name: jk-backend-prod
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://jk_user:${DB_PASSWORD:-password}@postgres:5432/jk_land_records
+      REDIS_URL: redis://redis:6379
+      ELASTICSEARCH_HOST: elasticsearch:9200
+      KEYCLOAK_URL: http://keycloak:8080
+      REALM: agristack
+      CLIENT_ID: agristack-backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    networks:
+      - jk-network
+
+  # Identity Provider (Keycloak)
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1
+    container_name: jk-keycloak-prod
+    restart: always
+    command: start-dev --import-realm # Switch to 'start' for true prod (requires db, https)
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_PROXY: edge
+    volumes:
+      - ./config/keycloak:/opt/keycloak/data/import
+    networks:
+      - jk-network
+
+  # PostgreSQL
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: jk-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_USER: jk_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: jk_land_records
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - jk-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: jk-redis-prod
+    restart: always
+    volumes:
+      - redis_data_prod:/data
+    networks:
+      - jk-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: jk-elasticsearch-prod
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data_prod:/usr/share/elasticsearch/data
+    networks:
+      - jk-network
+
+  # MinIO
+  minio:
+    image: minio/minio
+    container_name: jk-minio-prod
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data_prod:/data
+    networks:
+      - jk-network
+
+  # ERPNext DB
+  erp-mariadb:
+    image: mariadb:10.6
+    container_name: jk-erp-db-prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ERP_DB_PASSWORD:-admin}
+    volumes:
+      - erp_db_data_prod:/var/lib/mysql
+    networks:
+      - jk-network
+
+  # ERPNext Web
+  erp-web:
+    image: frappe/erpnext:latest
+    container_name: jk-erp-web-prod
+    restart: always
+    environment:
+      DB_HOST: erp-mariadb
+      DB_NAME: erpnext
+      DB_USER: root
+      DB_PASSWORD: ${ERP_DB_PASSWORD:-admin}
+    depends_on:
+      - erp-mariadb
+    volumes:
+      - erp_sites_prod:/home/frappe/frappe-bench/sites
+      - ./frappe-bench/apps:/home/frappe/frappe-bench/apps
+    # NOTE: Command adapted for prod (no 'bench serve' with reload?)
+    # Using default or specific start command
+    command: >
+      bash -c "env/bin/pip install -e apps/api_explorer &&
+      env/bin/pip install -e apps/land_records &&
+      bench serve --port 8000"
+    networks:
+      - jk-network
+
+volumes:
+  postgres_data_prod:
+  minio_data_prod:
+  redis_data_prod:
+  elasticsearch_data_prod:
+  erp_db_data_prod:
+  erp_sites_prod:
+
+networks:
+  jk-network:
+    driver: bridge
