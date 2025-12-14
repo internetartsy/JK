@@ -7,7 +7,7 @@ Orchestration of the entire microservice ecosystem using Docker Compose.
 
 ## 2. Architecture: Container Map
 ```mermaid
-graph TD
+flowchart TD
     %% -- User Layer --
     User([User / Device])
     Mobile([Mobile App (Offline First)])

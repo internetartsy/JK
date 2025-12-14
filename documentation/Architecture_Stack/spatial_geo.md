@@ -2,7 +2,7 @@
 
 ## 0. System Context (Meridian Architecture)
 ```mermaid
-graph TD
+flowchart TD
     %% -- User Layer --
     User([User / Device])
     Mobile([Mobile App (Offline First)])

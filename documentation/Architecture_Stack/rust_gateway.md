@@ -5,7 +5,7 @@ The Rust Gateway acts as the secure ingress for the AgriStack platform, enforcin
 
 ## 2. Architecture & Flow
 ```mermaid
-graph TD
+flowchart TD
     %% -- User Layer --
     User([User / Device])
     Mobile([Mobile App (Offline First)])

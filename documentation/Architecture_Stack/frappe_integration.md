@@ -7,7 +7,7 @@ Defines Frappe (ERPNext) as the **System of Record** for Land Records.
 
 ## 2. Architecture: Logical Flow
 ```mermaid
-graph TD
+flowchart TD
     %% -- User Layer --
     User([User / Device])
     Mobile([Mobile App (Offline First)])

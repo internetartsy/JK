@@ -9,7 +9,7 @@
 This diagram represents the certified traffic flow from external users to internal systems, highlighting the Role of the Rust Gateway, the Split-Stack backend (FastAPI + Frappe), and the Data Intelligence layer.
 
 ```mermaid
-graph TD
+flowchart TD
     %% -- User Layer --
     User([User / Device])
     Mobile([Mobile App (Offline First)])
