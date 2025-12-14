@@ -16,7 +16,7 @@ graph TB
     CONF -->|Yes| DB[(Database)]
     CONF -->|No| REVIEW[Manual Review Queue]
     
-    REGEX -.->|Complex Fields| LLM[AI Extractor (Future)]
+    REGEX -.->|Complex Fields| LLM[AI Extractor Future]
 ```
 
 ## 3. Logical Functions & Data
