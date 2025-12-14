@@ -9,9 +9,9 @@ flowchart TD
     Client -->|HTTPS| Gateway[Rust Security Gateway :8090]
     subgraph Gateway Security Layers
         Auth[Authentication Middleware]
-        Headers[Security Headers (ISO 27001)]
-        Rate[Rate Limiting (DoS Protection)]
-        Audit[Audit Logging (Traceability)]
+        Headers[Security Headers]
+        Rate[Rate Limiting]
+        Audit[Audit Logging]
     end
     Gateway --> Auth --> Headers --> Rate --> Audit
     Audit -->|Valid| Router{Router}
