@@ -19,9 +19,8 @@ import requests
 import frappe
 
 def sync_to_fastapi(doc, method):
-    # FastAPI webhook URL
-    # Try to get from settings, fallback to docker service name
-    webhook_url = "http://backend:8000/api/v1/frappe/webhook"
+    # FastAPI webhook URL (Routed via Security Gateway)
+    webhook_url = "http://security-gateway:8443/api/v1/frappe/webhook"
     
     # Determine action
     action = "insert" if method == "after_insert" else "update"

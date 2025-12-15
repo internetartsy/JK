@@ -1,0 +1,143 @@
+{
+    "actions": [],
+    "autoname": "field:transfer_id",
+    "creation": "2024-12-12 10:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "transfer_id",
+        "plot_id",
+        "from_farmer",
+        "to_farmer",
+        "transfer_type",
+        "status",
+        "date_of_application",
+        "approval_date",
+        "amended_from"
+    ],
+    "fields": [
+        {
+            "fieldname": "transfer_id",
+            "fieldtype": "Data",
+            "label": "Transfer ID",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "plot_id",
+            "fieldtype": "Link",
+            "label": "Plot ID",
+            "options": "Land Parcel",
+            "reqd": 1
+        },
+        {
+            "fieldname": "from_farmer",
+            "fieldtype": "Link",
+            "label": "From Farmer",
+            "options": "Farmer",
+            "reqd": 1
+        },
+        {
+            "fieldname": "to_farmer",
+            "fieldtype": "Link",
+            "label": "To Farmer",
+            "options": "Farmer",
+            "reqd": 1
+        },
+        {
+            "fieldname": "transfer_type",
+            "fieldtype": "Select",
+            "label": "Transfer Type",
+            "options": "Sale\nInheritance\nGift\nExchange"
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Draft\nSubmitted\nVerified\nApproved\nCompleted\nRejected"
+        },
+        {
+            "default": "Today",
+            "fieldname": "date_of_application",
+            "fieldtype": "Date",
+            "label": "Date of Application"
+        },
+        {
+            "fieldname": "approval_date",
+            "fieldtype": "Date",
+            "label": "Approval Date"
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "no_copy": 1,
+            "options": "Ownership Transfer",
+            "print_hide": 1,
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "is_submittable": 1,
+    "links": [],
+    "modified": "2024-12-12 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Ownership Transfer",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "read": 1,
+            "write": 1,
+            "submit": 1,
+            "role": "Operator"
+        },
+        {
+            "read": 1,
+            "write": 1,
+            "role": "Verifier"
+        },
+        {
+            "read": 1,
+            "write": 1,
+            "submit": 1,
+            "role": "Tahsildar"
+        },
+        {
+            "read": 1,
+            "write": 1,
+            "role": "Revenue Officer"
+        },
+        {
+            "read": 1,
+            "write": 1,
+            "role": "District Admin"
+        },
+        {
+            "read": 1,
+            "role": "State Admin"
+        },
+        {
+            "read": 1,
+            "role": "PMO Officer"
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "write": 1,
+            "submit": 1,
+            "amend": 1,
+            "report": 1,
+            "export": 1,
+            "print": 1,
+            "role": "Super Admin"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "track_changes": 1
+}

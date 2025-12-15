@@ -6,7 +6,9 @@
     "engine": "InnoDB",
     "field_order": [
         "task_id",
+        "source_file",
         "input_text",
+        "output_text",
         "target_script",
         "glossary_version",
         "status",
@@ -21,9 +23,19 @@
             "reqd": 1
         },
         {
+            "fieldname": "source_file",
+            "fieldtype": "Attach",
+            "label": "Source File (Urdu)"
+        },
+        {
             "fieldname": "input_text",
             "fieldtype": "Text",
-            "label": "Input Text"
+            "label": "Input Text (Urdu)"
+        },
+        {
+            "fieldname": "output_text",
+            "fieldtype": "Text",
+            "label": "Output Text (English)"
         },
         {
             "fieldname": "target_script",

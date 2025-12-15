@@ -1,0 +1,95 @@
+```mermaid
+graph TB
+    subgraph "User Interfaces"
+        REACT["React Web Dashboard<br/>(Operators, Verifiers)"]
+        NATIVE["React Native Mobile App<br/>(Field Teams, Tahsildar)"]
+        ADMIN["Admin Console<br/>(System Management)"]
+    end
+
+    subgraph "Rust Security Gateway"
+        GATEWAY["Rust Actix-Web<br/>API Gateway<br/><br/>• JWT + RBAC<br/>• AES-256 Encryption<br/>• Rate Limiting<br/>• Audit Logging"]
+    end
+
+    subgraph "FastAPI Backend Services"
+        OCR["OCR Service<br/>(Tesseract + EasyOCR)"]
+        TRANS["Transliteration<br/>Service"]
+        DEDUP["Deduplication<br/>Engine"]
+        GEO["Geo-Reference<br/>Service"]
+        DISPUTE["Dispute<br/>Management"]
+        FARMER["Farmer Master<br/>Service"]
+        OWNERSHIP["Ownership Transfer<br/>Service"]
+    end
+
+    subgraph "ERPNext (Frappe)"
+        PM_KISAN["PM-KISAN<br/>Enrollment"]
+        PMFBY["PMFBY<br/>Insurance"]
+        KCC["KCC<br/>Generation"]
+        LANDLORD["Landlord/Tenant<br/>Management"]
+    end
+
+    subgraph "Databases"
+        PG["PostgreSQL + PostGIS<br/>(Land Records)<br/><br/>• Master Land Records<br/>• Farmer Master<br/>• Ownership Transfer<br/>• Dispute Claims<br/>• Lease Agreements"]
+        REDIS["Redis Cache<br/>(Session + Config)"]
+        ES["Elasticsearch<br/>(Full-text Search)"]
+    end
+
+    subgraph "Optional: Blockchain Layer"
+        BLOCKCHAIN["Hyperledger Indy<br/>Blockchain<br/><br/>• Immutable Audit Trail<br/>• Ownership History<br/>• Dispute Timeline"]
+    end
+
+    subgraph "Optional: AI/ML"
+        LLM["Claude/Gemini API<br/>AI OCR<br/>(98%+ accuracy)"]
+        SATELLITE["Sentinel-2<br/>Remote Sensing<br/>(Field Verification)"]
+    end
+
+    subgraph "External Integrations"
+        AADHAAR["Aadhaar API<br/>(UIDAI)"]
+        ESIGN["eSign API<br/>(CCA)"]
+        AGRISTACK["AgriStack<br/>Integration"]
+        PFMS["PFMS<br/>(Benefit Disbursement)"]
+    end
+
+    REACT --> GATEWAY
+    NATIVE --> GATEWAY
+    ADMIN --> GATEWAY
+
+    GATEWAY --> OCR
+    GATEWAY --> TRANS
+    GATEWAY --> DEDUP
+    GATEWAY --> GEO
+    GATEWAY --> DISPUTE
+    GATEWAY --> FARMER
+    GATEWAY --> OWNERSHIP
+
+    OCR --> PG
+    TRANS --> PG
+    DEDUP --> PG
+    GEO --> PG
+    DISPUTE --> PG
+    FARMER --> PG
+    OWNERSHIP --> PG
+
+    FARMER --> PM_KISAN
+    FARMER --> PMFBY
+    FARMER --> KCC
+    PM_KISAN --> PFMS
+    PMFBY --> PFMS
+
+    OWNERSHIP --> AADHAAR
+    OWNERSHIP --> ESIGN
+    FARMER --> AADHAAR
+
+    FARMER --> AGRISTACK
+    PM_KISAN --> AGRISTACK
+
+    OWNERSHIP --> BLOCKCHAIN
+
+    DISPUTE --> LLM
+    OCR --> LLM
+    GEO --> SATELLITE
+
+    PG --> REDIS
+    PG --> ES
+
+    GATEWAY -.->|Audit Log| PG
+```

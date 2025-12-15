@@ -28,6 +28,7 @@ export default defineConfig({
         ]
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
           {
@@ -63,12 +64,16 @@ export default defineConfig({
     host: true, // Listen on all addresses (needed for Docker)
     allowedHosts: true, // Allow all hosts (needed for Nginx proxy)
     proxy: {
+      '/api/method': {
+        target: process.env.VITE_FRAPPE_TARGET || 'http://localhost:8080',
+        changeOrigin: true,
+      },
       '/api': {
         target: process.env.VITE_API_TARGET || 'http://localhost:8000',
         changeOrigin: true,
       },
       '/app': {
-        target: process.env.VITE_FRAPPE_TARGET || 'http://localhost:8001',
+        target: process.env.VITE_FRAPPE_TARGET || 'http://localhost:8000',
         changeOrigin: true,
       },
     },

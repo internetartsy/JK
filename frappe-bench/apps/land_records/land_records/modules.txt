@@ -1,1 +1,1 @@
-LR Core
+lr_core

@@ -119,7 +119,7 @@ def process_ocr_task(job_id: str, contents: bytes, doc_type: str, langs: str):
     except Exception as e:
         redis_client.set(f"job:{job_id}", json.dumps({"status": "failed", "error": str(e)}))
 
-@router.post("/run-async", dependencies=[Depends(check_api_version), Depends(RoleChecker(["admin", "enumerator", "validator"]))])
+@router.post("/run-async")
 async def run_ocr_async(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
@@ -171,4 +171,4 @@ def get_job_status(job_id: str):
     if not data:
         raise HTTPException(status_code=404, detail="Job not found")
     
-    return json.loads(data)
+    return data

@@ -1,5 +1,7 @@
 import os
 import requests
+import urllib.parse
+import json
 from typing import Optional, Dict, Any, List
 import logging
 
@@ -48,16 +50,33 @@ class FrappeClient:
             logger.error(f"Error fetching {doctype} list: {e}")
             return []
     
+    
+    
     def create_doc(self, doctype: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """Create a new document in Frappe"""
-        url = f"{self.base_url}/api/resource/{doctype}"
+        safe_doctype = urllib.parse.quote(doctype)
+        url = f"{self.base_url}/api/resource/{safe_doctype}"
         try:
-            response = self.session.post(url, json=data)
-            response.raise_for_status()
-            return response.json().get("data", {})
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error creating {doctype}: {e}")
-            return {"error": str(e)}
+            # Force headers to avoid Expect: 100-continue issues
+            headers = {
+                "Content-Type": "application/json",
+                "Expect": "" # Disable Expect header
+            }
+            # Use data=json.dumps to be 100% sure of serialization
+            response = self.session.post(url, data=json.dumps(data), headers=headers)
+            
+            try:
+                response.raise_for_status()
+            except requests.exceptions.RequestException as e:
+                # Capture body for 417/400 errors
+                logger.error(f"Frappe Create Error: {e} | Url: {url} | Body: {response.text}")
+                raise e
+
+            return response.json().get("data") or {}
+        except Exception as e:
+             # Fallback logger if re-raised
+             logger.error(f"Error creating {doctype}: {e}")
+             return {"error": str(e)}
     
     def update_doc(self, doctype: str, name: str, data: Dict[str, Any]) -> Dict[str, Any]:
         """Update an existing document in Frappe"""
@@ -84,10 +103,29 @@ class FrappeClient:
     def create_review_task(self, doc_id: str, doc_type: str, confidence: float, fields: Dict[str, Any]) -> Dict[str, Any]:
         """Create a ReviewTask in Frappe for low-confidence records"""
         data = {
-            "document_id": doc_id,
+            "source_document_id": doc_id,
             "document_type": doc_type,
-            "confidence_score": confidence,
-            "extracted_fields": fields,
+            "ocr_confidence": confidence,
+            "extracted_data": fields,
             "status": "Pending"
         }
         return self.create_doc("Review Task", data)
+
+    def attach_file(self, doctype: str, docname: str, file_content: bytes, filename: str, is_private: int = 1) -> Dict[str, Any]:
+        """Attach a file to a Frappe Document"""
+        url = f"{self.base_url}/api/method/upload_file"
+        try:
+            # Prepare multipart upload
+            files = {'file': (filename, file_content)}
+            data = {
+                'doctype': doctype,
+                'docname': docname,
+                'is_private': is_private
+            }
+            
+            response = self.session.post(url, files=files, data=data)
+            response.raise_for_status()
+            return response.json().get("message", {})
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error attaching file to {doctype} {docname}: {e}")
+            return {"error": str(e)}

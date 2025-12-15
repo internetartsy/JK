@@ -26,11 +26,15 @@ export interface Person {
 
 export interface LandParcel {
     id: string;
+    ulpin?: string;
     village_id: string;
     khasra_number: string;
+    landmark?: string;
     area_text: string;
     area_geom: number;
-    status: 'active' | 'disputed' | 'inactive';
+    status: 'submitted' | 'under_review' | 'escalated' | 'rejected' | 'process_debt' | 'approved' | 'blockchain_recorded' | 'signing' | 'active' | 'disputed' | 'inactive';
+    owner_id?: string;
+    owner_name?: string;
     version: number;
 }
 
@@ -81,8 +85,13 @@ export const personApi = {
 };
 
 export const parcelApi = {
-    getAll: async (params?: { village_id?: string; khasra_number?: string; skip?: number; limit?: number }) => {
+    getAll: async (params?: { village_id?: string; khasra_number?: string; ulpin?: string; landmark?: string; skip?: number; limit?: number }) => {
         const response = await apiClient.get<LandParcel[]>('/parcels/', { params });
+        return response.data;
+    },
+
+    search: async (query: string) => {
+        const response = await apiClient.get<LandParcel[]>('/parcels/search', { params: { q: query } });
         return response.data;
     },
 
@@ -92,10 +101,49 @@ export const parcelApi = {
     },
 
     getGeoJSON: async (villageId?: string) => {
-        const response = await apiClient.get<FeatureCollection>('/parcels/geojson', {
-            params: { village_id: villageId }
-        });
-        return response.data;
+        try {
+            const filters = villageId ? [['village_id', '=', villageId]] : undefined;
+            // Fetch directly from Frappe (Land Parcel DocType)
+            const response = await frappeDataApi.getList('Land Parcel',
+                ['name', 'parcel_id', 'geojson', 'ownership_status', 'khasra_number', 'village_id', 'area_text'],
+                filters
+            );
+
+            const features = response.data.data
+                .filter((p: any) => p.geojson)
+                .map((p: any) => {
+                    try {
+                        let geom = JSON.parse(p.geojson);
+                        if (geom.geometry) geom = geom.geometry;
+
+                        return {
+                            type: 'Feature',
+                            properties: {
+                                id: p.name,
+                                ulpin: p.parcel_id,
+                                status: (p.ownership_status || 'Private').toLowerCase() === 'disputed' ? 'disputed' : 'active',
+                                khasra: p.khasra_number,
+                                village: p.village_id,
+                                owner: 'Fetch Pending',
+                                farmer_id: 'View Details'
+                            },
+                            geometry: geom
+                        };
+                    } catch (e) { return null; }
+                })
+                .filter(Boolean);
+
+            return {
+                type: 'FeatureCollection',
+                features: features as any
+            };
+        } catch (err) {
+            console.warn("Failed to fetch Frappe GeoJSON, falling back to backend stub", err);
+            const response = await apiClient.get<FeatureCollection>('/parcels/geojson', {
+                params: { village_id: villageId }
+            });
+            return response.data;
+        }
     },
 
     getById: (id: string) =>
@@ -126,8 +174,50 @@ export const reviewApi = {
         apiClient.post<ReviewTask>(`/reviews/${id}/reject`),
 };
 
+export const ocrApi = {
+    upload: async (file: File) => {
+        // Always use the Python Backend for OCR Analysis + Frappe Sync
+        // The Backend (ocr.py) -> Celery -> SyncService flow handles storage & data creation
+        const formData = new FormData();
+        formData.append('file', file);
+        return apiClient.post<{ job_id: string, status: string }>('/ocr/run-async', formData);
+    },
+    status: (jobId: string) =>
+        frappeDataApi.getResource('OCR Result', jobId)
+            .then(r => ({ data: { status: r.data.data.status, result: r.data.data.extracted_data } }))
+            .catch(() => apiClient.get<{ status: string, result?: any }>(`/ocr/status/${jobId}`))
+};
+
 export const frappeSyncApi = {
     health: () => apiClient.get('/frappe/health'),
+};
+
+const frappeClient = axios.create({
+    baseURL: '/api', // Correctly routes to Frappe via Rust Gateway /api path
+    headers: { 'Content-Type': 'application/json' }
+});
+
+export const frappeDataApi = {
+    getResource: (doctype: string, name: string) => frappeClient.get(`/resource/${doctype}/${name}`),
+    getList: (doctype: string, fields?: string[], filters?: any) =>
+        frappeClient.get<{ data: any[] }>(`/resource/${doctype}`, {
+            params: {
+                fields: fields ? JSON.stringify(fields) : undefined,
+                filters: filters ? JSON.stringify(filters) : undefined,
+                limit_page_length: 500
+            }
+        }),
+    create: (doctype: string, data: any) => frappeClient.post(`/resource/${doctype}`, data),
+    uploadFile: (formData: FormData) => frappeClient.post('/method/upload_file', formData)
+};
+
+export const dataCleaningApi = {
+    runPipeline: async (villageCode?: string) => {
+        const response = await frappeClient.get('/method/land_records.lr_core.utils.data_cleaning.run_deduplication_pipeline', {
+            params: { village_code: villageCode }
+        });
+        return response.data.message;
+    }
 };
 
 export default apiClient;

@@ -34,7 +34,12 @@ target_metadata = Base.metadata
 # ... etc.
 
 def get_url():
-    return settings.DATABASE_URL
+    # Force local URL for local migration generation if env var is picking up docker default
+    url = os.getenv("DATABASE_URL", "postgresql://jk_user:password@localhost:5432/jk_land_records")
+    # If it stil points to 'db' (docker hostname), force localhost
+    if "@db:" in url:
+        return url.replace("@db:", "@localhost:")
+    return url
 
 def include_object(object, name, type_, reflected, compare_to):
     if type_ == "table" and name in [

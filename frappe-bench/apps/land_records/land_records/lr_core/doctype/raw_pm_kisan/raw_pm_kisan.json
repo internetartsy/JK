@@ -1,0 +1,92 @@
+{
+    "actions": [],
+    "creation": "2024-12-14 18:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "farmer_name",
+        "registration_no",
+        "mobile_no",
+        "village_name",
+        "father_name",
+        "state_name",
+        "district_name",
+        "sub_district_name",
+        "processing_status"
+    ],
+    "fields": [
+        {
+            "fieldname": "farmer_name",
+            "fieldtype": "Data",
+            "label": "Farmer Name",
+            "reqd": 1
+        },
+        {
+            "fieldname": "registration_no",
+            "fieldtype": "Data",
+            "label": "Registration No",
+            "unique": 0
+        },
+        {
+            "fieldname": "mobile_no",
+            "fieldtype": "Data",
+            "label": "Mobile No"
+        },
+        {
+            "fieldname": "village_name",
+            "fieldtype": "Data",
+            "label": "Village Name"
+        },
+        {
+            "fieldname": "father_name",
+            "fieldtype": "Data",
+            "label": "Father Name"
+        },
+        {
+            "fieldname": "state_name",
+            "fieldtype": "Data",
+            "label": "State Name"
+        },
+        {
+            "fieldname": "district_name",
+            "fieldtype": "Data",
+            "label": "District Name"
+        },
+        {
+            "fieldname": "sub_district_name",
+            "fieldtype": "Data",
+            "label": "Sub District Name"
+        },
+        {
+            "default": "Pending",
+            "fieldname": "processing_status",
+            "fieldtype": "Select",
+            "label": "Processing Status",
+            "options": "Pending\nProcessed\nError"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2024-12-14 18:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "LR Core",
+    "name": "Raw PM Kisan",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}

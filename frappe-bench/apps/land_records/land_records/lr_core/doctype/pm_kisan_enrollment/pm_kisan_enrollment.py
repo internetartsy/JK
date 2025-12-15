@@ -1,5 +1,4 @@
-import frappe
 from frappe.model.document import Document
 
-class Uclaim(Document):
+class PMKISANEnrollment(Document):
     pass

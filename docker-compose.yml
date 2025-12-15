@@ -1,0 +1,264 @@
+version: '3.9'
+
+services:
+  # Rust Security Gateway
+  security-gateway:
+    build: ./rust-shield
+    container_name: jk-security-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-supersecretjwt}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-supersecretkey}
+      DATABASE_URL: postgresql://jk_user:${DB_PASSWORD:-password}@postgres:5432/jk_land_records
+      REDIS_URL: redis://redis:6379
+      FRONTEND_URL: ${FRONTEND_URL:-http://frontend:5173}
+      BACKEND_URL: ${BACKEND_URL:-http://host.docker.internal:8000}
+      FRAPPE_URL: ${FRAPPE_URL:-http://erp-web:8000}
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./certs/:/app/certs/
+    networks:
+      - jk-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+  minio:
+    image: minio/minio
+    container_name: jk-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - jk-network
+
+  # Identity Provider (Keycloak)
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1
+    container_name: jk-keycloak
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./config/keycloak:/opt/keycloak/data/import
+    networks:
+      - jk-network
+
+  # FastAPI Backend
+  backend:
+    build: ./backend
+    profiles: ["backend"]
+    container_name: jk-fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://jk_user:${DB_PASSWORD:-password}@postgres:5432/jk_land_records
+      REDIS_URL: redis://redis:6379
+      ELASTICSEARCH_HOST: elasticsearch:9200
+      KEYCLOAK_URL: http://keycloak:8080
+      REALM: agristack
+      CLIENT_ID: agristack-backend
+      FRAPPE_URL: http://erp-web:8000
+      FRAPPE_API_KEY: 84eeac4d6d0cdff
+      FRAPPE_API_SECRET: 95f136e022e217d
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    networks:
+      - jk-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - ./backend:/app
+
+  # Celery Worker
+  worker:
+    build: ./backend
+    container_name: jk-worker
+    command: celery -A app.core.celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://jk_user:${DB_PASSWORD:-password}@postgres:5432/jk_land_records
+      REDIS_URL: redis://redis:6379
+      ELASTICSEARCH_HOST: elasticsearch:9200
+      KEYCLOAK_URL: http://keycloak:8080
+      REALM: agristack
+      CLIENT_ID: agristack-backend
+      FRAPPE_URL: http://erp-web:8000
+      FRAPPE_API_KEY: 84eeac4d6d0cdff
+      FRAPPE_API_SECRET: 95f136e022e217d
+      # MinIO Config for Docker Internal Network
+
+      MINIO_ENDPOINT: minio:9000
+
+
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - jk-network
+    volumes:
+      - ./backend:/app
+
+
+  # React Frontend
+  frontend:
+    build: ./frontend-landing
+    container_name: jk-frontend
+    ports:
+      - "3000:5173"
+    environment:
+      VITE_API_TARGET: http://jk-security-gateway:8090
+      VITE_FRAPPE_TARGET: http://jk-security-gateway:8090
+    networks:
+      - jk-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: jk-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: jk_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: jk_land_records
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Commented out as file missing
+    networks:
+      - jk-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jk_user -d jk_land_records"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: jk-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - jk-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: jk-elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - jk-network
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: jk-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - jk-network
+
+  # Grafana Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: jk-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - jk-network
+
+  # ERPNext Instance
+  erp-mariadb:
+    image: mariadb:10.6
+    container_name: jk-erp-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ERP_DB_PASSWORD:-admin}
+    volumes:
+      - erp_db_data:/var/lib/mysql
+    networks:
+      - jk-network
+
+  erp-web:
+    image: frappe/erpnext:latest
+    container_name: jk-erp-web
+    ports:
+      - "8080:8000"
+    environment:
+      DB_HOST: erp-mariadb
+      DB_NAME: erpnext
+      DB_USER: root
+      DB_PASSWORD: ${ERP_DB_PASSWORD:-admin}
+    depends_on:
+      - erp-mariadb
+    volumes:
+      - erp_sites:/home/frappe/frappe-bench/sites
+      - ./frappe-bench/apps:/home/frappe/frappe-bench/apps
+      - ./frappe-bench/logs:/home/frappe/frappe-bench/logs
+    command: >
+      bash -c "env/bin/pip install -e apps/api_explorer &&
+      env/bin/pip install -e apps/land_records &&
+      bench use localhost &&
+      bench --site localhost set-config developer_mode 1 && 
+      bench serve --port 8000"
+    networks:
+      - jk-network
+
+volumes:
+  postgres_data:
+  minio_data:
+  redis_data:
+  elasticsearch_data:
+  prometheus_data:
+  grafana_data:
+  erp_db_data:
+  erp_sites:
+
+networks:
+  jk-network:
+    driver: bridge

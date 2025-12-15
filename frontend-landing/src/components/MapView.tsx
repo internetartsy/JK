@@ -10,6 +10,81 @@ interface MapViewProps {
     zoom?: number;
 }
 
+const mockGeoJSON: GeoJSON.FeatureCollection = {
+    type: 'FeatureCollection',
+    features: [
+        {
+            type: 'Feature',
+            properties: {
+                id: 'LP-1001',
+                ulpin: 'JK-8080',
+                farmer_id: 'FAR-1001',
+                status: 'under_review',
+                owner: 'Ramesh Kumar',
+                village: 'Rampur',
+                khasra: '12/4',
+                landmark: 'Near Canal'
+            },
+            geometry: {
+                type: 'Polygon',
+                coordinates: [[
+                    [74.7973, 32.7266],
+                    [74.8023, 32.7266],
+                    [74.8023, 32.7216],
+                    [74.7973, 32.7216],
+                    [74.7973, 32.7266]
+                ]]
+            }
+        },
+        {
+            type: 'Feature',
+            properties: {
+                id: 'LP-1002',
+                ulpin: 'JK-9090',
+                farmer_id: 'FAR-1002',
+                status: 'disputed',
+                owner: 'Sita Devi',
+                village: 'Rampur',
+                khasra: '14/2',
+                landmark: 'Old Well'
+            },
+            geometry: {
+                type: 'Polygon',
+                coordinates: [[
+                    [74.8073, 32.7316],
+                    [74.8123, 32.7316],
+                    [74.8123, 32.7266],
+                    [74.8073, 32.7266],
+                    [74.8073, 32.7316]
+                ]]
+            }
+        },
+        {
+            type: 'Feature',
+            properties: {
+                id: 'LP-1003',
+                ulpin: 'JK-7070',
+                farmer_id: 'FAR-1003',
+                status: 'active',
+                owner: 'Abdul Khan',
+                village: 'Jammu West',
+                khasra: '88/1',
+                landmark: 'Highway Junction'
+            },
+            geometry: {
+                type: 'Polygon',
+                coordinates: [[
+                    [74.8050, 32.7200],
+                    [74.8100, 32.7200],
+                    [74.8100, 32.7150],
+                    [74.8050, 32.7150],
+                    [74.8050, 32.7200]
+                ]]
+            }
+        }
+    ]
+};
+
 export function MapView({
     center = [74.7973, 32.7266], // Jammu coordinates
     zoom = 13,
@@ -21,41 +96,6 @@ export function MapView({
     const [geoJsonData, setGeoJsonData] = useState<GeoJSON.FeatureCollection | null>(null);
     const [searchResults, setSearchResults] = useState<GeoJSON.Feature[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-
-    // Mock GeoJSON for demo if backend is empty
-    const mockGeoJSON: GeoJSON.FeatureCollection = {
-        type: 'FeatureCollection',
-        features: [
-            {
-                type: 'Feature',
-                properties: { id: 'LP-1001', status: 'active', owner: 'Ramesh Kumar', village: 'Rampur', khasra: '12/4' },
-                geometry: {
-                    type: 'Polygon',
-                    coordinates: [[
-                        [74.7973, 32.7266],
-                        [74.8073, 32.7266],
-                        [74.8073, 32.7166],
-                        [74.7973, 32.7166],
-                        [74.7973, 32.7266]
-                    ]]
-                }
-            },
-            {
-                type: 'Feature',
-                properties: { id: 'LP-1002', status: 'disputed', owner: 'Sita Devi', village: 'Rampur', khasra: '14/2' },
-                geometry: {
-                    type: 'Polygon',
-                    coordinates: [[
-                        [74.8173, 32.7366],
-                        [74.8273, 32.7366],
-                        [74.8273, 32.7266],
-                        [74.8173, 32.7266],
-                        [74.8173, 32.7366]
-                    ]]
-                }
-            }
-        ]
-    };
 
     useEffect(() => {
         if (!mapContainer.current || map.current) return;
@@ -114,16 +154,18 @@ export function MapView({
                 id: 'parcels-fill',
                 type: 'fill',
                 source: 'parcels',
+                filter: ['==', 'id', ''], // Initially hidden (User Request: Show only on search)
                 paint: {
                     'fill-color': [
                         'match',
                         ['get', 'status'],
                         'active', '#16a34a',   // primary-600
+                        'under_review', '#ca8a04', // yellow-600
                         'disputed', '#ea580c', // orange-600
                         'inactive', '#94a3b8', // slate-400
-                        '#16a34a'
+                        'rgba(200, 200, 200, 0.0)' // Default: Fully Transparent
                     ],
-                    'fill-opacity': 0.4,
+                    'fill-opacity': 0.2,
                 },
             });
 
@@ -131,8 +173,16 @@ export function MapView({
                 id: 'parcels-outline',
                 type: 'line',
                 source: 'parcels',
+                filter: ['==', 'id', ''], // Initially hidden
                 paint: {
-                    'line-color': '#166534', // primary-800
+                    'line-color': [
+                        'match',
+                        ['get', 'status'],
+                        'active', '#4ade80',   // green-400
+                        'under_review', '#eab308', // yellow-500
+                        'disputed', '#f97316', // orange-500
+                        '#cccccc'
+                    ],
                     'line-width': 2,
                 },
             });
@@ -147,6 +197,26 @@ export function MapView({
                     'line-color': '#d946ef', // fuchsia-500
                     'line-width': 4,
                     'line-opacity': 0.8
+                }
+            });
+
+            // Add Labels
+            map.current?.addLayer({
+                id: 'parcels-labels',
+                type: 'symbol',
+                source: 'parcels',
+                filter: ['==', 'id', ''], // Initially hidden
+                layout: {
+                    'text-field': ['get', 'farmer_id'],
+                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                    'text-size': 12,
+                    'text-anchor': 'center',
+                    'text-offset': [0, 0]
+                },
+                paint: {
+                    'text-color': '#000000',
+                    'text-halo-color': '#ffffff',
+                    'text-halo-width': 2
                 }
             });
 
@@ -211,34 +281,103 @@ export function MapView({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const handleSearch = (query: string) => {
+    // HMR / Data Refresh Effect
+    useEffect(() => {
+        if (loaded && map.current) {
+            const source = map.current.getSource('parcels') as maplibregl.GeoJSONSource;
+            if (source) {
+                source.setData(mockGeoJSON);
+                setGeoJsonData(mockGeoJSON);
+            }
+        }
+    }, [loaded]); // mockGeoJSON is now constant, but this ensures initial sync if loaded late
+
+    const handleSearch = async (query: string) => {
         setSearchQuery(query);
-        if (!query.trim() || !geoJsonData) {
+        if (!query.trim()) {
             setSearchResults([]);
             setIsSearching(false);
-            if (map.current) map.current.setFilter('parcels-highlight', ['==', 'id', '']);
+            if (map.current) {
+                map.current.setFilter('parcels-highlight', ['==', 'id', '']);
+                // Reset visibility: Hide all again when search is cleared
+                map.current.setFilter('parcels-fill', ['==', 'id', '']);
+                map.current.setFilter('parcels-outline', ['==', 'id', '']);
+                map.current.setFilter('parcels-labels', ['==', 'id', '']);
+            }
             return;
         }
 
         setIsSearching(true);
+        // Local Filter first (fast feedback)
         const lowerQuery = query.toLowerCase();
-        const results = geoJsonData.features.filter((f: any) => {
-            const props = f.properties;
-            return (
-                props.owner?.toLowerCase().includes(lowerQuery) ||
-                props.id?.toLowerCase().includes(lowerQuery) ||
-                props.village?.toLowerCase().includes(lowerQuery) ||
-                props.khasra?.toLowerCase().includes(lowerQuery)
-            );
-        });
+        let results: any[] = [];
+
+        if (geoJsonData) {
+            results = geoJsonData.features.filter((f: any) => {
+                const props = f.properties;
+                return (
+                    props.owner?.toLowerCase().includes(lowerQuery) ||
+                    props.id?.toLowerCase().includes(lowerQuery) ||
+                    props.ulpin?.toLowerCase().includes(lowerQuery) ||
+                    props.farmer_id?.toLowerCase().includes(lowerQuery) ||
+                    props.landmark?.toLowerCase().includes(lowerQuery) ||
+                    props.village?.toLowerCase().includes(lowerQuery) ||
+                    (props.khasra || props.khasra_number)?.toLowerCase().includes(lowerQuery)
+                );
+            });
+        }
+
+        // Server Search (enrichment)
+        if (query.length > 2) {
+            try {
+                const serverResults = await parcelApi.search(query);
+                if (serverResults && serverResults.length > 0) {
+                    // Convert LandParcel to GeoJSON Feature
+                    const newFeatures = serverResults.map(p => ({
+                        type: 'Feature',
+                        properties: {
+                            id: p.id,
+                            ulpin: p.ulpin,
+                            landmark: p.landmark,
+                            status: p.status,
+                            owner: p.owner_name || p.owner_id || "Unknown Owner",
+                            farmer_id: p.owner_id, // Map owner_id to farmer_id fallback
+                            village: p.village_id,
+                            khasra: p.khasra_number
+                        },
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: [[[0, 0], [0, 0], [0, 0], [0, 0]]] // Placeholder geometry if missing
+                            // In a real scenario, the search endpoint should return geometry or we fetch separate
+                        }
+                    }));
+
+                    // Merge unique by ID
+                    const existingIds = new Set(results.map(r => r.properties.id));
+                    newFeatures.forEach((nf: any) => {
+                        if (!existingIds.has(nf.properties.id)) {
+                            results.push(nf);
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error("Search failed", err);
+            }
+        }
+
         setSearchResults(results);
     };
 
     const selectParcel = (feature: any) => {
         if (!map.current) return;
 
-        // Highlight
+        // Highlight & Filter
         map.current.setFilter('parcels-highlight', ['==', 'id', feature.properties.id]);
+
+        // "Only which mention": Filter others out
+        map.current.setFilter('parcels-fill', ['==', 'id', feature.properties.id]);
+        map.current.setFilter('parcels-outline', ['==', 'id', feature.properties.id]);
+        map.current.setFilter('parcels-labels', ['==', 'id', feature.properties.id]);
 
         // Fly to
         const bounds = new maplibregl.LngLatBounds();
@@ -255,8 +394,11 @@ export function MapView({
             .setHTML(`
                 <div class="p-2 text-secondary-900">
                     <h3 class="font-bold text-sm">${feature.properties.id}</h3>
+                    <p class="text-xs text-gray-600">ULPIN: ${feature.properties.ulpin || 'N/A'}</p>
                     <p class="text-xs text-gray-600">Owner: ${feature.properties.owner}</p>
+                    <p class="text-xs text-gray-600">Farmer ID: ${feature.properties.farmer_id || 'N/A'}</p>
                     <p class="text-xs text-gray-600">Village: ${feature.properties.village}</p>
+                    ${feature.properties.landmark ? `<p class="text-xs text-gray-500 italic">Near ${feature.properties.landmark}</p>` : ''}
                     <div class="mt-2 text-xs font-bold text-fuchsia-600 flex items-center gap-1">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         Pinned Location
@@ -281,7 +423,7 @@ export function MapView({
                         type="text"
                         value={searchQuery}
                         onChange={(e) => handleSearch(e.target.value)}
-                        placeholder="Search for Ramesh, Khasra, Village..."
+                        placeholder="Search by ULPIN, Owner, Landmark..."
                         className="w-full pl-10 pr-10 py-3 bg-white/90 dark:bg-secondary-800/90 backdrop-blur border border-white/50 dark:border-secondary-600 rounded-xl text-secondary-900 dark:text-white placeholder-secondary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
                     />
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-400" size={18} />
@@ -301,13 +443,28 @@ export function MapView({
                                 onClick={() => selectParcel(result)}
                                 className="px-4 py-3 border-b border-secondary-100 dark:border-secondary-700 last:border-0 hover:bg-secondary-50 dark:hover:bg-secondary-700 cursor-pointer flex items-start gap-3 transition-colors"
                             >
-                                <div className="mt-1 p-1 bg-primary-100 dark:bg-primary-900/30 rounded text-primary-600 dark:text-primary-400">
+                                <div className={`mt-1 p-1 rounded ${result.properties?.status === 'active' ? 'bg-green-100 text-green-600' :
+                                    result.properties?.status === 'under_review' ? 'bg-yellow-100 text-yellow-600' :
+                                        result.properties?.status === 'disputed' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'
+                                    }`}>
                                     <MapPin size={14} />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-secondary-900 dark:text-white text-sm">{result.properties?.owner}</p>
+                                    <p className="font-medium text-secondary-900 dark:text-white text-sm flex items-center gap-2">
+                                        {result.properties?.owner}
+                                        <span className="text-secondary-400 font-normal">({result.properties?.id})</span>
+                                        <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${result.properties?.status === 'active' ? 'bg-green-100 text-green-700' :
+                                            result.properties?.status === 'under_review' ? 'bg-yellow-100 text-yellow-700' :
+                                                result.properties?.status === 'disputed' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-700'
+                                            }`}>
+                                            {result.properties?.status}
+                                        </span>
+                                    </p>
                                     <p className="text-xs text-secondary-500 dark:text-secondary-400">
-                                        {result.properties?.village} • Khasra: {result.properties?.khasra || 'N/A'}
+                                        {result.properties?.ulpin ? `ULPIN: ${result.properties.ulpin} • ` : ''}
+                                        {result.properties?.farmer_id ? `ID: ${result.properties.farmer_id} • ` : ''}
+                                        {result.properties?.village} • Khasra: {result.properties?.khasra || result.properties?.khasra_number || 'N/A'}
+                                        {result.properties?.landmark ? ` • Near ${result.properties.landmark}` : ''}
                                     </p>
                                 </div>
                             </div>
@@ -332,12 +489,14 @@ export function MapView({
                 </div>
             </div>
 
-            {!loaded && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 dark:bg-secondary-800/90 px-8 py-4 rounded-xl shadow-lg font-medium text-secondary-600 dark:text-secondary-300 z-10 flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                    Loading map data...
-                </div>
-            )}
-        </div>
+            {
+                !loaded && (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 dark:bg-secondary-800/90 px-8 py-4 rounded-xl shadow-lg font-medium text-secondary-600 dark:text-secondary-300 z-10 flex items-center gap-3">
+                        <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                        Loading map data...
+                    </div>
+                )
+            }
+        </div >
     );
 }
