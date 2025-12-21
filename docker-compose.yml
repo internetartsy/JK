@@ -77,6 +77,7 @@ services:
       FRAPPE_URL: http://erp-web:8000
       FRAPPE_API_KEY: 84eeac4d6d0cdff
       FRAPPE_API_SECRET: 95f136e022e217d
+      GOOGLE_API_KEY: AIzaSyBkYjOAhcz5oqe8tE2tE_Qhm4ttrvqNHcU
     depends_on:
       - postgres
       - redis
@@ -113,6 +114,7 @@ services:
 
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
+      GOOGLE_API_KEY: AIzaSyBkYjOAhcz5oqe8tE2tE_Qhm4ttrvqNHcU
     depends_on:
       - postgres
       - redis

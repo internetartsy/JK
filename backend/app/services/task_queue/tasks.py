@@ -40,7 +40,7 @@ def process_ocr_document_task(object_name: str, bucket_name: str = "scans", doc_
         redis_client.set(f"job:{job_id}", json.dumps({"status": "processing", "progress": 30, "message": "Running OCR"}))
 
         # 2. Process OCR
-        ocr_result = ocr_service.process_document(image_data, doc_type=doc_type, langs=langs)
+        ocr_result = ocr_service.process_document(image_data, doc_type=doc_type, langs=langs, doc_id=job_id)
         
         if "error" in ocr_result.get("ocr", {}):
             raise Exception(f"OCR Engine Failed: {ocr_result['ocr']['error']}")

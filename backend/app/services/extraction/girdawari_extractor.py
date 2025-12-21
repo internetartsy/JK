@@ -28,7 +28,42 @@ class GirdawariExtractor(BaseFieldExtractor):
                 # Log and fallback
                 print(f"Table extraction failed: {e}")
 
-        # 2. Fallback to Text Pattern Matching
+        # 2. Try Gemini AI Structure Extraction (Preferred for Complex Text)
+        from app.services.ai.gemini_service import gemini_service
+        gemini_result = None
+        
+        # If we have full text or complex layout, try LLM
+        if gemini_service.model: 
+            try:
+                # Use raw text snippet or combine blocks
+                ocr_text = ocr_result.get("ocr", {}).get("text", "") 
+                if not ocr_text:
+                     ocr_text = " ".join(self._extract_text_blocks(ocr_result.get("ocr", {})))
+                
+                gemini_result = gemini_service.translate_and_parse(ocr_text[:3000]) # Limit context window if needed
+                
+                if gemini_result and "error" not in gemini_result:
+                    # Map Gemini JSON to our internal schema
+                    return {
+                        "fields": {
+                            "khasra_number": ", ".join(gemini_result.get("khasra_numbers", [])),
+                            "village": gemini_result.get("village", ""),
+                            "owner_name": gemini_result.get("owner", {}).get("name"),
+                            "owner_name_urdu": "", # LLM might not preserve original Urdu unless asked
+                            "father_name": gemini_result.get("owner", {}).get("parent"),
+                            "cultivator_name": gemini_result.get("cultivator", {}).get("name"),
+                            "area_text": gemini_result.get("area"),
+                            # Fallback for other standard fields via regex if needed, or ask LLM to extract them
+                            "date": self._extract_date(ocr_text) # Hybrid approach
+                        },
+                        "data_rows": getattr(gemini_service, '_expand_from_llm', lambda x: [x])(gemini_result), # Placeholder for future expansion logic
+                        "confidence": 0.95,
+                        "source": "gemini_ai_extractor"
+                    }
+            except Exception as e:
+                print(f"Gemini Extraction failed, falling back to Regex: {e}")
+
+        # 3. Fallback to Text Pattern Matching (Legacy Regex)
         text_blocks = self._extract_text_blocks(ocr_result.get("ocr", {}))
         full_text = " ".join(text_blocks)
         
