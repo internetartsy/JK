@@ -32,8 +32,8 @@ flowchart LR
     end
     Frappe["Registry Step (Frappe)"]
 
-    User -->|External Request| Check
-    Check -->|Validated Forward| Frappe
+    User -->|"External Request"| Check
+    Check -->|"Validated Forward"| Frappe
 ```
 
 ## 4. Maintenance & Multi-Dev Alignment

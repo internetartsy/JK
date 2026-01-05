@@ -25,9 +25,9 @@ flowchart LR
     end
     Frappe["Registry Step (Frappe)"]
 
-    MO -->|Binary + Context| AI
+    MO -->|"Binary + Context"| AI
     AI --> Map
-    Map -->|Structured JSON| Frappe
+    Map -->|"Structured JSON"| Frappe
 ```
 
 ## 4. Multi-Dev Consistency

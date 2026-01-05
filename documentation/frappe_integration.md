@@ -22,8 +22,8 @@ flowchart TD
     end
 
     Doc --> Hook
-    Hook -->|Domain Event| MO
-    MO -->|Functional Execution| Workers["OCRStep / ExtractionStep"]
+    Hook -->|"Domain Event"| MO
+    MO -->|"Functional Execution"| Workers["OCRStep and ExtractionStep"]
 ```
 
 ### 3.0 Core Identification (Document 1D)

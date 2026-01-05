@@ -25,9 +25,9 @@ flowchart LR
     end
     Frappe["Registry Step (Frappe)"]
 
-    MO -->|GeoJSON Context| Analyse
+    MO -->|"GeoJSON Context"| Analyse
     Analyse --> PostGIS
-    PostGIS -->|ULPIN / Boundary| Frappe
+    PostGIS -->|"ULPIN / Boundary"| Frappe
 ```
 
 ## 4. Thinkable Mapping

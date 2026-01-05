@@ -35,11 +35,11 @@ flowchart TD
 
     %% -- Flows --
     Auth --> SOR
-    SOR -->|Document 1D Event| Flow
+    SOR -->|"Document 1D Event"| Flow
     Flow --> OCR
     Flow --> GIS
-    OCR -->|Result| SOR
-    GIS -->|Result| SOR
+    OCR -->|"Result"| SOR
+    GIS -->|"Result"| SOR
 ```
 
 ### 1.1 The Lifecycle of a "Document 1D"

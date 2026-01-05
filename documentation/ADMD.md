@@ -47,13 +47,13 @@ flowchart TD
     end
 
     %% -- Logical Flow --
-    RS -->|Validated Call| FR
-    FR -->|Domain Event (Document 1D)| MO
-    MO -->|StorageStep| OS
-    MO -->|OCRStep| OS
-    MO -->|ExtractionStep| ES
-    OS -->|Result Update| FR
-    ES -->|Result Update| FR
+    RS -->|"Validated Call"| FR
+    FR -->|"Domain Event (Document 1D)"| MO
+    MO -->|"StorageStep"| OS
+    MO -->|"OCRStep"| OS
+    MO -->|"ExtractionStep"| ES
+    OS -->|"Result Update"| FR
+    ES -->|"Result Update"| FR
 ```
 
 ## 4. Logical Workflow Specifications
