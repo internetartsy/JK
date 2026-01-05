@@ -3,13 +3,13 @@ from fastapi.responses import Response
 from app.api import ocr
 from app.api.v1 import persons, parcels, frappe_sync
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+import time
 from app.core.metrics import (
     http_requests_total, 
     http_request_duration_seconds,
     active_requests,
     app_info
 )
-import time
 
 app = FastAPI(
     title="Land Records OCR API"
@@ -17,9 +17,11 @@ app = FastAPI(
 
 # Set app info
 app_info.info({
-    "version": "1.0.0",
+    "version": "2.0.0",
     "environment": "development",
-    "service": "land-records-backend"
+    "service": "land-records-backend",
+    "orchestration": "motia-unified",
+    "primitive": "thinkable-step"
 })
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -50,7 +52,7 @@ async def metrics_middleware(request: Request, call_next):
     
     active_requests.inc()
     start_time = time.time()
-    
+
     # Security Audit Logging
     from app.core.security.audit import log_security_event
     

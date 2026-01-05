@@ -73,6 +73,9 @@ async fn proxy_handler(req: HttpRequest, body: web::Bytes, data: web::Data<AppSt
         }
     }
     
+    // Motia Alignment: Mark as Edge_Step
+    request_builder = request_builder.header("X-Motia-Step", "Edge_Step");
+    
     request_builder = request_builder.body(body.to_vec());
 
     match request_builder.send().await {

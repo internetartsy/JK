@@ -10,6 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@motiadev/core": "0.17.9-beta.191",
+    "@motiadev/plugin-bullmq": "0.17.9-beta.191",
+    "@motiadev/plugin-endpoint": "0.17.9-beta.191",
+    "@motiadev/plugin-logs": "0.17.9-beta.191",
+    "@motiadev/plugin-observability": "0.17.9-beta.191",
+    "@motiadev/plugin-states": "0.17.9-beta.191",
+    "@motiadev/ui": "^0.17.9-beta.191",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
     "@types/three": "^0.182.0",
