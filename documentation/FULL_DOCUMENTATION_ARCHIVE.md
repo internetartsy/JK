@@ -35,7 +35,7 @@ flowchart TD
 
     %% -- Flows --
     Auth --> SOR
-    SOR -->|"Document 1D Event"| Flow
+    SOR -->|"Doc1D Event"| Flow
     Flow --> OCR
     Flow --> GIS
     OCR -->|"Result"| SOR

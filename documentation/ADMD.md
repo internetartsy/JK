@@ -43,12 +43,12 @@ flowchart TD
     subgraph Execution_Layer [Service Runners]
         OS["OCRStep"]
         ES["ExtractionStep"]
-        SS["SpatialGeoStep (TBD)"]
+        SS["SpatialGeoStep"]
     end
 
     %% -- Logical Flow --
     RS -->|"Validated Call"| FR
-    FR -->|"Domain Event (Document 1D)"| MO
+    FR -->|"Domain Event - Doc1D"| MO
     MO -->|"StorageStep"| OS
     MO -->|"OCRStep"| OS
     MO -->|"ExtractionStep"| ES

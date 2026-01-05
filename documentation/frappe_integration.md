@@ -13,7 +13,7 @@ The Registry Step emits **Domain Events** consumed by the `MotiaOrchestrator`.
 ```mermaid
 flowchart TD
     subgraph Registry_Step [Registry: Frappe]
-        Doc["Document (Document 1D)"]
+        Doc["Document - Doc1D"]
         Hook["frappe.on_update Hook"]
     end
 
