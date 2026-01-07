@@ -88,7 +88,8 @@ class OCRService:
         image_data: bytes, 
         doc_type: str = "girdawari",
         langs: str = "ur+en",
-        force_engine: str = None # Added param to force specific engine
+        force_engine: str = None, # Added param to force specific engine
+        doc_id: str = None # Optional external ID
     ) -> Dict[str, Any]:
         """
         Process a land record document through OCR pipeline
@@ -101,7 +102,8 @@ class OCRService:
         Returns:
             Processing result with OCR text, layout, tables, confidence
         """
-        doc_id = str(uuid.uuid4())
+        if not doc_id:
+            doc_id = str(uuid.uuid4())
         
         # Upload to storage
         try:

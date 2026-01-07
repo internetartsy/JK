@@ -1,14 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import List
-from app.api import deps
-from app.models.review_task import ReviewTask, ReviewStatus
+from fastapi import APIRouter, Depends, HTTPException, Body
+from typing import List, Any
+from app.services.frappe_sync.frappe_client import FrappeClient
 from pydantic import BaseModel
 
 router = APIRouter()
+frappe = FrappeClient()
 
 class ReviewTaskSchema(BaseModel):
-    id: str
+    id: str  # maps to 'name' in Frappe
     document_id: str
     document_type: str
     confidence_score: float
@@ -20,103 +19,74 @@ class ReviewTaskSchema(BaseModel):
         from_attributes = True
 
 @router.get("/pending", response_model=List[ReviewTaskSchema])
-def get_pending_reviews(
-    db: Session = Depends(deps.get_db),
-    skip: int = 0,
-    limit: int = 100,
-):
-    return db.query(ReviewTask).filter(ReviewTask.status == ReviewStatus.PENDING).offset(skip).limit(limit).all()
+def get_pending_reviews():
+    """Fetch Pending Review Tasks directly from Frappe"""
+    try:
+        # Fetch fields needed for the UI
+        fields = ["name", "document_id", "document_type", "confidence_score", "extracted_fields", "status", "assigned_to"]
+        filters = {"status": "Pending"}
+        
+        response = frappe.get_list("Review Task", fields=fields, filters=filters)
+        
+        tasks = []
+        # FrappeClient.get_list returns the list directly
+        if not response:
+             return []
+
+        for item in response:
+            import json
+            # Handle potential stringified JSON from Frappe
+            extracted = item.get("extracted_fields", {})
+            if isinstance(extracted, str):
+                try:
+                    extracted = json.loads(extracted)
+                except:
+                    extracted = {}
+
+            tasks.append(ReviewTaskSchema(
+                id=item.get("name"),
+                document_id=item.get("document_id"),
+                document_type=item.get("document_type"),
+                confidence_score=item.get("confidence_score"),
+                extracted_fields=extracted,
+                status=item.get("status"),
+                assigned_to=item.get("assigned_to")
+            ))
+            
+        return tasks
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch reviews from Frappe: {str(e)}")
 
 class ReviewAction(BaseModel):
     corrected_data: dict | None = None
 
 @router.post("/{id}/approve")
-def approve_review(
-    id: str,
-    action: ReviewAction,
-    db: Session = Depends(deps.get_db),
-):
-    task = db.query(ReviewTask).filter(ReviewTask.id == id).first()
-    if not task:
-        raise HTTPException(status_code=404, detail="Review task not found")
-    
-    # 1. Update the task with corrected data
-    if action.corrected_data:
-        task.extracted_fields = action.corrected_data
-    
-    task.status = ReviewStatus.APPROVED
-    
-    # 2. Apply changes to the Target Record (e.g., LandParcel)
-    from app.models.land_parcel import LandParcel
-    from app.models.person import Person
-    
-    fields = task.extracted_fields
-    
-    # Handle Person/Farmer Creation
-    owner_name = fields.get("owner_name")
-    person_id = None
-    
-    if owner_name:
-        # Check if person exists (Exact match on Urdu name for now)
-        # In production, use Entity Resolution service
-        person = db.query(Person).filter(Person.name_urdu == owner_name).first()
-        if not person:
-            person = Person(
-                name_urdu=owner_name,
-                confidence=task.confidence_score,
-                dispute_status="clear"
-            )
-            db.add(person)
-            db.flush() # Get ID
+def approve_review(id: str, action: ReviewAction = Body(...)):
+    """Approve Review Task in Frappe"""
+    try:
+        # 1. Update Corrected Data if provided
+        if action.corrected_data:
+            import json
+            frappe.update_doc("Review Task", id, {
+                "extracted_fields": json.dumps(action.corrected_data)
+            })
             
-            # Sync to Frappe immediately
-            # from app.services.frappe_sync.sync_service import FrappeSyncService
-            # sync_svc = FrappeSyncService()
-            # sync_svc.sync_person_to_frappe(person)
+        # 2. Submit Approval (Update Status)
+        # Assuming Frappe workflow or simple status update
+        frappe.update_doc("Review Task", id, {"status": "Approved"})
         
-        person_id = str(person.id)
-
-    if task.document_type in ["girdawari", "khasra"]:
-        # Simple Upsert Logic based on Khasra Number + Village
-        khasra = fields.get("khasra_number")
-        village = fields.get("village_id") or fields.get("village")
+        # 3. (Optional) Trigger Local DB Sync or Frappe logic
+        # For now, we assume Frappe hooks handle the rest (creating Land Parcel, etc.)
         
-        if khasra and village:
-            existing_parcel = db.query(LandParcel).filter(
-                LandParcel.khasra_number == khasra,
-                LandParcel.village_id == village
-            ).first()
-            
-            if existing_parcel:
-                # Update
-                if person_id:
-                    existing_parcel.owner_id = person_id
-                existing_parcel.area_text = fields.get("area") or existing_parcel.area_text
-                # existing_parcel.image_url = ...
-            else:
-                # Create New
-                new_parcel = LandParcel(
-                    khasra_number=khasra,
-                    village_id=village,
-                    owner_id=person_id or fields.get("owner_name"), # Fallback to string if logic fails
-                    area_text=fields.get("area"),
-                    status="verified"
-                )
-                db.add(new_parcel)
-    
-    db.commit()
-    db.refresh(task)
-    return task
+        return {"status": "approved", "id": id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to approve review in Frappe: {str(e)}")
 
 @router.post("/{id}/reject")
-def reject_review(
-    id: str,
-    db: Session = Depends(deps.get_db),
-):
-    task = db.query(ReviewTask).filter(ReviewTask.id == id).first()
-    if not task:
-        raise HTTPException(status_code=404, detail="Review task not found")
-    task.status = ReviewStatus.REJECTED
-    db.commit()
-    db.refresh(task)
-    return task
+def reject_review(id: str):
+    """Reject Review Task in Frappe"""
+    try:
+        frappe.update_doc("Review Task", id, {"status": "Rejected"})
+        return {"status": "rejected", "id": id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to reject review in Frappe: {str(e)}")

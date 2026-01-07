@@ -69,4 +69,3 @@ def process_ocr_document_task(object_name: str, bucket_name: str = "scans", doc_
         logger.error(f"Motia Orchestration failed for {document_1d}: {e}")
         redis_client.set(f"job:{document_1d}", json.dumps({"status": "failed", "error": str(e)}))
         return {"status": "failed", "error": str(e)}
-
