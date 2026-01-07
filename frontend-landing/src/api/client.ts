@@ -155,6 +155,11 @@ export const parcelApi = {
     delete: (id: string) =>
         apiClient.delete(`/parcels/${id}`),
 
+    transmit: async (id: string) => {
+        const response = await apiClient.post(`/parcels/${id}/transmit`);
+        return response.data;
+    },
+
     getStats: async () => {
         const response = await apiClient.get<{ total_farmers: number, total_parcels: number, avg_parcels_per_farmer: number }>('/parcels/stats/farmers');
         return response.data;

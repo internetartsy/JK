@@ -199,13 +199,14 @@ class FrappeSyncService:
         doc_id: str,
         fields: Dict[str, Any],
         file_content: Optional[bytes] = None,
-        file_name: Optional[str] = None
+        file_name: Optional[str] = None,
+        provided_farmer_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Sync extracted Mutation/Registry data to Ownership Transfer flow.
         Creates Buyer, Seller, Land Parcel (with GeoJSON), and the Transfer request.
         """
-        logger.info(f"Syncing Transfer for {doc_id}")
+        logger.info(f"Syncing Transfer for {doc_id} (Farmer: {provided_farmer_id})")
         
         # 1. Create/Get Seller (From Farmer)
         seller_name_en = fields.get("seller_name", "Unknown")
@@ -214,10 +215,15 @@ class FrappeSyncService:
         from_farmer_id = self._create_or_get_farmer(seller_name_en, seller_name_ur, seller_father)
         
         # 2. Create/Get Buyer (To Farmer)
-        buyer_name_en = fields.get("buyer_name", "Unknown")
-        buyer_name_ur = fields.get("buyer_name_ur", buyer_name_en)
-        buyer_father = fields.get("buyer_father", "Unknown")
-        to_farmer_id = self._create_or_get_farmer(buyer_name_en, buyer_name_ur, buyer_father)
+        # Use provided_farmer_id if this is a registration/KYC flow
+        if provided_farmer_id:
+            to_farmer_id = provided_farmer_id
+            logger.info(f"Using provided farmer_id {to_farmer_id} as Buyer")
+        else:
+            buyer_name_en = fields.get("buyer_name", "Unknown")
+            buyer_name_ur = fields.get("buyer_name_ur", buyer_name_en)
+            buyer_father = fields.get("buyer_father", "Unknown")
+            to_farmer_id = self._create_or_get_farmer(buyer_name_en, buyer_name_ur, buyer_father)
         
         if not from_farmer_id or not to_farmer_id:
             logger.error("Failed to create/find farmers for transfer")
@@ -266,7 +272,8 @@ class FrappeSyncService:
         has_tables: bool = False,
         table_confidence: Optional[float] = None,
         file_content: Optional[bytes] = None,
-        file_name: Optional[str] = None
+        file_name: Optional[str] = None,
+        provided_farmer_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Analyze extraction confidence and route to appropriate review workflow
@@ -348,15 +355,18 @@ class FrappeSyncService:
                         # Generate deterministic ID or let Frappe handle naming
                     }
                     
-                    farmer_id = None
-                    try:
-                        # Try to create Farmer doc
-                        # In real prod, check for duplicates first!
-                        farmer_res = self.client.create_doc("Farmer", farmer_data)
-                        farmer_id = farmer_res.get("name")
-                        logger.info(f"Auto-created Farmer {farmer_id} for {owner_name_raw}")
-                    except Exception as fe:
-                        logger.warn(f"Could not create farmer: {fe}")
+                    farmer_id = provided_farmer_id
+                    if not farmer_id:
+                        try:
+                            # Try to create Farmer doc
+                            # In real prod, check for duplicates first!
+                            farmer_res = self.client.create_doc("Farmer", farmer_data)
+                            farmer_id = farmer_res.get("name")
+                            logger.info(f"Auto-created Farmer {farmer_id} for {owner_name_raw}")
+                        except Exception as fe:
+                            logger.warn(f"Could not create farmer: {fe}")
+                    else:
+                        logger.info(f"Using provided farmer_id {farmer_id} for Land Parcel linkage")
 
                     # 2. Create Land Parcel
                     land_data = {

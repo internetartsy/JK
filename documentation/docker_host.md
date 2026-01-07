@@ -10,11 +10,11 @@ Orchestration of the entire microservice ecosystem using Docker Compose.
 flowchart TD
     %% -- User Layer --
     User(["User / Device"])
-    Mobile(["Mobile App (Offline First)"])
+    Mobile(["Mobile App - Offline First"])
     
     %% -- Edge Layer --
     subgraph Edge_Infrastructure [Edge Infrastructure]
-        Nginx["Nginx Reverse Proxy\n(Port 80/443)"]
+        Nginx["Nginx Reverse Proxy\n- Port 80 and 443"]
         Gateway["Rust Security Gateway\n(Port 8090)"]
     end
 
@@ -102,8 +102,20 @@ extra_hosts:
 *   **Orchestration**: `docker-compose.yml`, `docker-compose.prod.yml`
 *   **Config**: `config/`, `.env`
 *   **Gateway**: `nginx/`, `rust-shield/`
+*   **Secrets**: `.gitignore` (Policed via security audit)
 
-## 7. Docker API Endpoints & Backend Details
+## 7. Security & Git Ignore Policy
+To maintain high security and avoid accidental leaks of sensitive information, the following patterns are strictly ignored in Git:
+
+| Category | Patterns | Reason |
+| :--- | :--- | :--- |
+| **Secrets** | `.env` | Local environment variables & staging keys. |
+| **Certs** | `certs/` | SSL certificates and private keys. |
+| **Config** | `site_config.json` | Site-specific Frappe configuration. |
+| **Volumes** | `*_data/` | Database and object storage persistence. |
+| **Temporary** | `*.png`, `*.docx`, `*.txt` | Debug snapshots, office docs, and terminal logs. |
+
+> **⚠️ Security Note**: Always verify your branch status with `git status` before pushing to ensure no sensitive files are staged.
 To interact with the containerized backend from the host or external networks:
 
 | Service | Port (Container) | Port (Host) | Internal DNS | Endpoint Description |

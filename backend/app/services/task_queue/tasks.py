@@ -4,7 +4,12 @@ from app.core.motia.orchestrator import MotiaOrchestrator
 from app.core.motia.steps.storage import StorageStep
 from app.core.motia.steps.ocr import OCRStep
 from app.core.motia.steps.extraction import ExtractionStep
+from app.core.motia.steps.consent import ConsentValidatorStep
+from app.core.motia.steps.aadhaar import AadhaarAuthStep
+from app.core.motia.steps.kyc import KYCVerificationStep
 from app.core.motia.steps.registry_sync import RegistrySyncStep
+from app.core.motia.steps.export import NationalExportStep
+from app.core.motia.steps.issuance import IssuanceStep
 
 import logging
 import json
@@ -31,7 +36,12 @@ def process_ocr_document_task(object_name: str, bucket_name: str = "scans", doc_
             StorageStep("Download", config={"bucket": bucket_name, "object_name": object_name}),
             OCRStep("OCR_Processing", config={"langs": langs}),
             ExtractionStep("Field_Extraction"),
-            RegistrySyncStep("Registry_Reconciliation")
+            ConsentValidatorStep("Legal_Consent_Bridge"),
+            AadhaarAuthStep("Aadhaar_KYC"),
+            KYCVerificationStep("KYC_Consolidation"),
+            RegistrySyncStep("Registry_Reconciliation"),
+            NationalExportStep("AgriStack_JSON_Bucket"),
+            IssuanceStep("Farmer_ID_Issuance")
         ])
         
         # 3. Functional Execution

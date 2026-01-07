@@ -5,31 +5,31 @@
 flowchart TD
     %% -- User Layer --
     User(["User / Device"])
-    Mobile(["Mobile App (Offline First)"])
+    Mobile(["Mobile App - Offline First"])
     
     %% -- Edge Layer --
     subgraph Edge_Infrastructure [Edge Infrastructure]
-        Nginx["Nginx Reverse Proxy\n(Port 80/443)"]
-        Gateway["Rust Security Gateway\n(Port 8090)"]
+        Nginx["Nginx Reverse Proxy"]
+        Gateway["Rust Security Gateway"]
     end
 
     %% -- Application Layer --
     subgraph App_Layer [Application Systems]
-        Frontend["React Frontend\n(Static Serve)"]
-        Backend["FastAPI Backend\n(OCR / Spatial / Dedupe)"]
-        Frappe["Frappe / ERPNext\n(System of Record)"]
+        Frontend["React Frontend"]
+        Backend["FastAPI Backend"]
+        Frappe["Frappe ERPNext"]
     end
 
     %% -- Data Intelligence Layer --
-    subgraph Intelligence [Data Intelligence & Processing]
-        OCR_Worker["OCR Engine\n(Tesseract/EasyOCR)"]
-        Dedupe["Data Cleaning Service\n(Python Algorithm)"]
-        Geo_Engine["Spatial Analysis\n(PostGIS/Shapely)"]
+    subgraph Intelligence [Data Intelligence and Processing]
+        OCR_Worker["OCR Engine"]
+        Dedupe["Data Cleaning Service"]
+        Geo_Engine["Spatial Analysis"]
     end
 
     %% -- Persistence Layer --
     subgraph Data_Layer [Persistence]
-        PSQL[("PostgreSQL + PostGIS")]
+        PSQL[("PostgreSQL and PostGIS")]
         Redis[("Redis Cache")]
         MinIO[("MinIO Object Storage")]
         MariaDB[("MariaDB - Frappe")]
@@ -39,14 +39,14 @@ flowchart TD
     User -->|"HTTPS"| Nginx
     Mobile -->|"HTTPS"| Nginx
 
-    Nginx -->|"/ (Root)"| Frontend
+    Nginx -->|"/"| Frontend
     Nginx -->|"/api"| Gateway
     Nginx -->|"/app"| Frappe
 
-    Gateway -->|"Auth & Rate Limit"| Backend
+    Gateway -->|"Auth and Rate Limit"| Backend
     Gateway -->|"Proxy Legacy"| Frappe
     
-    Backend -->|"Read/Write"| PSQL
+    Backend -->|"Read and Write"| PSQL
     Backend -->|"Cache"| Redis
     Backend -->|"Store Files"| MinIO
     
@@ -71,17 +71,17 @@ React-based Dashboard for Verifiers and Operators.
 ## 2. Architecture: Component Tree
 ```mermaid
 graph TD
-    App -->|Route| Dashboard
-    App -->|Route| ReviewQueue
-    App -->|Route| MapViewer
+    App["App"] -->|"Route"| Dashboard["Dashboard"]
+    App -->|"Route"| ReviewQueue["ReviewQueue"]
+    App -->|"Route"| MapViewer["MapViewer"]
     
-    Dashboard --> StatGrid
-    Dashboard --> SyncChart[Recharts Graph]
-    Dashboard --> RecentActivity
+    Dashboard --> StatGrid["StatGrid"]
+    Dashboard --> SyncChart["Recharts Graph"]
+    Dashboard --> RecentActivity["RecentActivity"]
     
-    ReviewQueue --> SplitView
-    SplitView --> OCRImage[Canvas Overlay]
-    SplitView --> FormEditor
+    ReviewQueue --> SplitView["SplitView"]
+    SplitView --> OCRImage["Canvas Overlay"]
+    SplitView --> FormEditor["FormEditor"]
 ```
 
 ## 3. Logical Functions & State
@@ -105,10 +105,10 @@ These endpoints are actively consumed by the frontend client. Use these to debug
 | Feature | Method | Endpoint | Purpose |
 | :--- | :--- | :--- | :--- |
 | **Dashboard** | `GET` | `/api/v1/parcels/stats` | Fetches aggregate counters (Total, Pending, disputes) |
-| **Visuals** | `GET` | `/api/v1/parcels/recent` | Populates "Recent Activity" feed |
-| **Review** | `GET` | `/api/v1/reviews/pending` | Loads the OCR verification queue |
-| **Review** | `PATCH` | `/api/v1/reviews/{id}` | Submits corrections (e.g. valid status) |
-| **Map** | `GET` | `/api/v1/spatial/tiles/{z}/{x}/{y}.pbf` | Vector tiles for the map layer |
+| **Registry Master** | `LINK` | `8090/app/land-parcel`| Unified Secure Link to Frappe SOR Registry |
+| **Review** | `GET` | `/api/v1/reviews/pending` | Loads the live OCR verification queue |
+| **Review** | `POST` | `/api/v1/reviews/{id}/approve`| Live Approve & Transmit to AgriStack |
+| **Map** | `SURGICAL` | `MapView.tsx` | Context outlines + status-based target fill |
 
 ## 5. Directory Structure
 ```

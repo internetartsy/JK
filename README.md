@@ -118,12 +118,12 @@ JK/
 
 We have updated all architecture documentation to detailed **Version 2 Standards**.
 
-*   [**Frontend Architecture**](./documentation/Architecture_Stack/frontend.md) - Components & State Logic
-*   [**Native Mobile Architecture**](./documentation/Architecture_Stack/native.md) - Offline Sync & OCR
-*   [**Rust Gateway**](./documentation/Architecture_Stack/rust_gateway.md) - Security & Audit Specs
-*   [**Frappe Integration**](./documentation/Architecture_Stack/frappe_integration.md) - Doctype Schema & Webhooks
-*   [**Spatial & Geo**](./documentation/Architecture_Stack/spatial_geo.md) - PostGIS & Maps
-*   [**OCR Intelligence**](./documentation/Architecture_Stack/ocr_geo.md) - AI/ML Extraction Pipeline
+*   [**Frontend Architecture**](./documentation/frontend.md) - Components & State Logic
+*   [**Native Mobile Architecture**](./documentation/native.md) - Offline Sync & OCR
+*   [**Rust Gateway**](./documentation/rust_gateway.md) - Security & Audit Specs
+*   [**Frappe Integration**](./documentation/frappe_integration.md) - Doctype Schema & Webhooks
+*   [**Spatial & Geo**](./documentation/spatial_geo.md) - PostGIS & Maps
+*   [**OCR Intelligence**](./documentation/ocr_geo.md) - AI/ML Extraction Pipeline
 
 ---
 

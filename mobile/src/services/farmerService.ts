@@ -57,6 +57,7 @@ export const FarmerService = {
         aadhaar_number: string;
         claimed_ror_numbers: string[];
         face_auth_image: string | null;
+        biometric_pid?: string | null;
         manual_lands: any[];
     }) => {
         try {
@@ -64,6 +65,19 @@ export const FarmerService = {
             return response.data;
         } catch (error) {
             console.error("Registration Failed", error);
+            throw error;
+        }
+    },
+    // Biometric Verification (RD Service Integration)
+    biometricVerify: async (pidData: string, aadhaar: string) => {
+        try {
+            const response = await client.post('/auth/biometric', {
+                pid_xml: pidData,
+                aadhaar_number: aadhaar
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Biometric Verification Failed", error);
             throw error;
         }
     }

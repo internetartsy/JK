@@ -150,73 +150,68 @@ export function MapView({
             // Set initial data state mostly for search immediate availability
             setGeoJsonData(mockGeoJSON);
 
+            // Context Layer: Faint outlines for all parcels to provide land context
+            map.current?.addLayer({
+                id: 'parcels-context-outline',
+                type: 'line',
+                source: 'parcels',
+                paint: {
+                    'line-color': '#94a3b8', // slate-400
+                    'line-width': 0.5,
+                    'line-opacity': 0.3,
+                },
+            });
+
+            // Target Layer: Status-based FILL only for the searched/selected parcel
             map.current?.addLayer({
                 id: 'parcels-fill',
                 type: 'fill',
                 source: 'parcels',
-                filter: ['==', 'id', ''], // Initially hidden (User Request: Show only on search)
+                filter: ['==', 'id', ''], // Strictly targeted
                 paint: {
                     'fill-color': [
                         'match',
                         ['get', 'status'],
-                        'active', '#16a34a',   // primary-600
-                        'under_review', '#ca8a04', // yellow-600
-                        'disputed', '#ea580c', // orange-600
-                        'inactive', '#94a3b8', // slate-400
-                        'rgba(200, 200, 200, 0.0)' // Default: Fully Transparent
+                        'active', '#10b981',   // emerald-500
+                        'under_review', '#f59e0b', // amber-500
+                        'disputed', '#ef4444', // red-500
+                        '#6366f1' // indigo-500 default
                     ],
-                    'fill-opacity': 0.2,
+                    'fill-opacity': 0.4,
                 },
             });
 
+            // Active Highlight: The "Pinned" surgical border
             map.current?.addLayer({
                 id: 'parcels-outline',
                 type: 'line',
                 source: 'parcels',
-                filter: ['==', 'id', ''], // Initially hidden
+                filter: ['==', 'id', ''],
                 paint: {
-                    'line-color': [
-                        'match',
-                        ['get', 'status'],
-                        'active', '#4ade80',   // green-400
-                        'under_review', '#eab308', // yellow-500
-                        'disputed', '#f97316', // orange-500
-                        '#cccccc'
-                    ],
-                    'line-width': 2,
+                    'line-color': '#d946ef', // fuchsia-500
+                    'line-width': 3,
+                    'line-opacity': 0.9,
+                    'line-dasharray': [2, 1]
                 },
             });
 
-            // Specific layer for search highlighting (Pink/Purple)
-            map.current?.addLayer({
-                id: 'parcels-highlight',
-                type: 'line',
-                source: 'parcels',
-                filter: ['==', 'id', ''], // Initially hidden
-                paint: {
-                    'line-color': '#d946ef', // fuchsia-500
-                    'line-width': 4,
-                    'line-opacity': 0.8
-                }
-            });
-
-            // Add Labels
+            // Dynamic Labels: Only showing for the targeted parcel to avoid clutter
             map.current?.addLayer({
                 id: 'parcels-labels',
                 type: 'symbol',
                 source: 'parcels',
-                filter: ['==', 'id', ''], // Initially hidden
+                filter: ['==', 'id', ''],
                 layout: {
-                    'text-field': ['get', 'farmer_id'],
-                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-                    'text-size': 12,
-                    'text-anchor': 'center',
-                    'text-offset': [0, 0]
+                    'text-field': ['get', 'owner'],
+                    'text-size': 11,
+                    'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+                    'text-radial-offset': 1.5,
+                    'text-justify': 'auto',
                 },
                 paint: {
-                    'text-color': '#000000',
+                    'text-color': '#1e293b',
                     'text-halo-color': '#ffffff',
-                    'text-halo-width': 2
+                    'text-halo-width': 2,
                 }
             });
 
@@ -298,8 +293,7 @@ export function MapView({
             setSearchResults([]);
             setIsSearching(false);
             if (map.current) {
-                map.current.setFilter('parcels-highlight', ['==', 'id', '']);
-                // Reset visibility: Hide all again when search is cleared
+                // Reset visibility: Hide all highlights/fills when search is cleared
                 map.current.setFilter('parcels-fill', ['==', 'id', '']);
                 map.current.setFilter('parcels-outline', ['==', 'id', '']);
                 map.current.setFilter('parcels-labels', ['==', 'id', '']);

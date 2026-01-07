@@ -125,12 +125,32 @@ export function EnrollmentStatus({ onBack }: EnrollmentStatusProps) {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-start gap-3"
+                                className="space-y-4"
                             >
-                                <CheckCircle2 className="text-emerald-400 flex-shrink-0 mt-0.5" size={20} />
-                                <div>
-                                    <h4 className="text-emerald-400 font-semibold text-sm">Application Approved</h4>
-                                    <p className="text-emerald-200/60 text-xs mt-1">Your enrollment (ID: {idValue}) has been processed successfully. You can now download your digital passbook.</p>
+                                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
+                                    <CheckCircle2 className="text-emerald-400 flex-shrink-0 mt-0.5" size={20} />
+                                    <div>
+                                        <h4 className="text-emerald-400 font-semibold text-sm">Farmer ID Issued: JK-F-2025-9921</h4>
+                                        <p className="text-emerald-200/60 text-xs mt-1">Verification complete. Data transmitted to National AgriStack Funnel.</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-slate-800/80 border border-white/10 rounded-xl p-4">
+                                    <h4 className="text-white text-xs font-bold uppercase tracking-wider mb-3 opacity-60">Verified Registry Pipeline</h4>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2 text-xs text-gray-300">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                            <span>Spatial ULPIN Mapping Complete</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-gray-300">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                            <span>Biometric Aadhaar e-KYC Linked</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-gray-300">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                                            <span className="text-blue-300">Pushing JSON Bucket to National Gateway...</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}

@@ -57,21 +57,21 @@ export function LandingPage() {
                 <div className="flex items-center gap-4">
                     {/* AgriStack Brand Logo */}
                     <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-br from-primary-500 to-primary-600 p-2 rounded-lg shadow-lg shadow-primary-500/20 border border-white/10">
-                            <Tractor className="text-white h-6 w-6" strokeWidth={2.5} />
-                        </div>
-                        <span className="text-2xl font-bold tracking-tight text-white">
-                            AgriStack
+                        <span className="text-2xl font-black tracking-tighter text-white uppercase italic">
+                            Agri<span className="text-primary-500">Stack</span>
                         </span>
                     </div>
 
-                    <div className="h-8 w-px bg-white/20"></div>
-                    <div className="bg-white rounded-md py-1 px-2 flex items-center justify-center shadow-lg">
-                        <img
-                            src="/nic_logo.png"
-                            alt="NIC"
-                            className="h-8 w-auto object-contain"
-                        />
+                    <div className="h-8 w-px bg-white/10 mx-2"></div>
+
+                    {/* Official Govt Branding Container */}
+                    <div className="flex items-center gap-4">
+                        <div className="bg-white/5 border border-white/10 rounded-lg py-1.5 px-3 flex items-center justify-center backdrop-blur-md">
+                            <span className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Government of J&K</span>
+                        </div>
+                        <div className="hidden sm:block bg-white/5 border border-white/10 rounded-lg py-1.5 px-3 flex items-center justify-center backdrop-blur-md">
+                            <span className="text-[10px] font-bold text-primary-400 uppercase tracking-[0.2em]">Digital India</span>
+                        </div>
                     </div>
                 </div>
 

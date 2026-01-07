@@ -10,6 +10,8 @@ from app.api.deps import check_api_version, RoleChecker
 from pydantic import BaseModel
 import uuid
 import json
+from sqlalchemy import String
+from app.services.transmission_service import TransmissionService
 
 router = APIRouter(prefix="/parcels", tags=["parcels"])
 
@@ -238,3 +240,41 @@ def delete_parcel(parcel_id: str, db: Session = Depends(get_db)):
     db.delete(parcel)
     db.commit()
     return {"message": "Parcel deleted successfully"}
+@router.post("/{parcel_id}/transmit", dependencies=[Depends(RoleChecker(["admin", "validator"]))])
+async def transmit_parcel_to_national(parcel_id: str, db: Session = Depends(get_db)):
+    """
+    Manually trigger transmission of a parcel's 'Data Bucket' to the National AgriStack Gateway.
+    This simulates the final step of the GoI workflow.
+    """
+    parcel = db.query(LandParcel).filter(LandParcel.id == parcel_id).first()
+    if not parcel:
+        raise HTTPException(status_code=404, detail="Parcel not found")
+    
+    # Simulating data bucket generation
+    bucket = {
+        "ulpin": parcel.parcel_id or f"JK-{parcel.village_id}-{parcel.khasra_number}",
+        "geometry": parcel.area_geom, # In a real system, we'd fetch GeoJSON
+        "metadata": {
+            "source": "JK_LPM",
+            "timestamp": datetime.utcnow().isoformat(),
+            "status": parcel.status
+        }
+    }
+    
+    try:
+        service = TransmissionService()
+        doc_id = f"MANUAL-TX-{parcel.id[:8]}"
+        result = await service.transmit_bucket(document_1d=doc_id, payload=bucket)
+        
+        # Update parcel status to reflect transmission
+        parcel.status = "blockchain_recorded" # Using this as a 'Nationalized' marker for now
+        db.commit()
+        
+        return {
+            "status": "success",
+            "transmission_id": result["transmission_id"],
+            "recipient_gateway": "https://api.agristack.gov.in/v1/ingest", # From TransmissionService
+            "bucket_hash": result["receipt_hash"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

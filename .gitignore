@@ -70,3 +70,10 @@ local_archive/
 geo_log_data/
 target/
 rust-shield/target/
+
+# Security & Secrets
+certs/
+site_config.json
+*.png
+*.docx
+curl_output.txt

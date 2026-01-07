@@ -1,32 +1,81 @@
 # Frappe Integration Architecture (Registry_Step)
 
-## 1. Role: The authoritative "Registry_Step"
-In the **Motia Unified Architecture**, Frappe (ERPNext) serves as the **System of Record (SOR)**. It is the primary data source and the persistence layer for all legal land records.
+## 0. System Context (Meridian Architecture)
+```mermaid
+flowchart TD
+    %% -- User Layer --
+    User(["User / Device"])
+    Mobile(["Mobile App - Offline First"])
+    
+    %% -- Edge Layer --
+    subgraph Edge_Infrastructure [Edge Infrastructure]
+        Nginx["Nginx Reverse Proxy"]
+        Gateway["Rust Security Gateway"]
+    end
 
-*   **Primitive**: `Registry_Step`
-*   **Version**: Frappe v15 / ERPNext v15
-*   **Identification**: Anchored by **Document 1D**.
+    %% -- Application Layer --
+    subgraph App_Layer [Application Systems]
+        Frontend["React Frontend"]
+        Backend["FastAPI Backend"]
+        Frappe["Frappe ERPNext"]
+    end
+
+    %% -- Data Intelligence Layer --
+    subgraph Intelligence [Data Intelligence and Processing]
+        OCR_Worker["OCR Engine"]
+        Dedupe["Data Cleaning Service"]
+        Geo_Engine["Spatial Analysis"]
+    end
+
+    %% -- Persistence Layer --
+    subgraph Data_Layer [Persistence]
+        PSQL[("PostgreSQL and PostGIS")]
+        Redis[("Redis Cache")]
+        MinIO[("MinIO Object Storage")]
+        MariaDB[("MariaDB - Frappe")]
+    end
+
+    %% -- Flows --
+    User -->|"HTTPS"| Nginx
+    Mobile -->|"HTTPS"| Nginx
+
+    Nginx -->|"/"| Frontend
+    Nginx -->|"/api"| Gateway
+    Nginx -->|"/app"| Frappe
+
+    Gateway -->|"Auth and Rate Limit"| Backend
+    Gateway -->|"Proxy Legacy"| Frappe
+    
+    Backend -->|"Read and Write"| PSQL
+    Backend -->|"Cache"| Redis
+    Backend -->|"Store Files"| MinIO
+    
+    Frappe -->|"System Records"| MariaDB
+```
+
+## 1. Role: The authoritative "Registry_Step"
+In the **Motia Unified Architecture**, Frappe (ERPNext) serves as the **System of Record (SOR)**.
 
 ## 2. Event-Driven Handoff to Motia
 The Registry Step emits **Domain Events** consumed by the `MotiaOrchestrator`.
 
 ```mermaid
 flowchart TD
-    subgraph Registry_Step [Registry: Frappe]
-        Doc["Document - Doc1D"]
+    subgraph Registry_Layer [Registry_Step]
+        Doc(["Document - Doc1D"])
         Hook["frappe.on_update Hook"]
     end
 
-    subgraph Logic_Step [Orchestration: Motia]
+    subgraph Logic_Layer [Core_Step]
         MO["MotiaOrchestrator"]
     end
 
     Doc --> Hook
     Hook -->|"Domain Event"| MO
-    MO -->|"Functional Execution"| Workers["OCRStep and ExtractionStep"]
+    MO -->|"Execute Step"| Workers["OCRStep and ExtractionStep"]
 ```
 
-### 3.0 Core Identification (Document 1D)
+### 3.0 Core Identification Doc1D
 Every record created within the Registry Step must have a unique **Document 1D**. 
 *   **Generation**: Assigned during initial ingress.
 *   **Orchestration**: Used by **Motia** to track asynchronous tasks across different languages and services.
@@ -51,6 +100,11 @@ Specialized Service Steps post results back to Frappe using the **Document 1D** 
 ### 4.2 Outbound Events (Registry -> Step)
 When a document is updated in Frappe, it triggers an outbound notification:
 *   **Sync Logic**: Webhooks configured on `on_update` or `on_submit` events point to the **Motia Orchestrator**.
+
+### 4.3 Secure Registry Master Access
+Operators can access the the Frappe System of Record (SOR) through the unified security layer.
+*   **Bridge URL**: `http://localhost:8090/app/land-parcel`
+*   **Security Protocol**: Proxied via **Rust Shield** (Edge_Step) for authenticated access.
 
 ## 5. Functional Implementation Reference
 

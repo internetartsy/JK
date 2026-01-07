@@ -1,11 +1,60 @@
 # Spatial Intelligence & GIS (Service Step)
 
-## 1. Role: The geometric "Service_Step"
-The **Spatial Intelligence** layer is a specialized **Service Step** for managing the geospatial state of land parcels. It provides high-performance spatial querying and geometric validation.
+## 0. System Context (Meridian Architecture)
+```mermaid
+flowchart TD
+    %% -- User Layer --
+    User(["User / Device"])
+    Mobile(["Mobile App - Offline First"])
+    
+    %% -- Edge Layer --
+    subgraph Edge_Infrastructure [Edge Infrastructure]
+        Nginx["Nginx Reverse Proxy"]
+        Gateway["Rust Security Gateway"]
+    end
 
-*   **Primitive**: `Service_Step`
-*   **Engine**: PostGIS + FastAPI
-*   **Functional Goal**: Verify boundaries, calculate areas, and link ULPINs to global coordinates.
+    %% -- Application Layer --
+    subgraph App_Layer [Application Systems]
+        Frontend["React Frontend"]
+        Backend["FastAPI Backend"]
+        Frappe["Frappe ERPNext"]
+    end
+
+    %% -- Data Intelligence Layer --
+    subgraph Intelligence [Data Intelligence and Processing]
+        OCR_Worker["OCR Engine"]
+        Dedupe["Data Cleaning Service"]
+        Geo_Engine["Spatial Analysis"]
+    end
+
+    %% -- Persistence Layer --
+    subgraph Data_Layer [Persistence]
+        PSQL[("PostgreSQL and PostGIS")]
+        Redis[("Redis Cache")]
+        MinIO[("MinIO Object Storage")]
+        MariaDB[("MariaDB - Frappe")]
+    end
+
+    %% -- Flows --
+    User -->|"HTTPS"| Nginx
+    Mobile -->|"HTTPS"| Nginx
+
+    Nginx -->|"/"| Frontend
+    Nginx -->|"/api"| Gateway
+    Nginx -->|"/app"| Frappe
+
+    Gateway -->|"Auth and Rate Limit"| Backend
+    Gateway -->|"Proxy Legacy"| Frappe
+    
+    Backend -->|"Read and Write"| PSQL
+    Backend -->|"Cache"| Redis
+    Backend -->|"Store Files"| MinIO
+    
+    Frappe -->|"System Records"| MariaDB
+```
+
+## 1. Role: The geometric "Service_Step"
+Spatial Intelligence is a specialized **Service_Step** responding to geometric triggers.
 
 ## 2. Logical Execution Flow
 The Spatial Step is strictly functional, responding to geometric triggers from the **Motia** layer.
@@ -18,16 +67,16 @@ The Spatial Step is strictly functional, responding to geometric triggers from t
 ## 3. Logical Architecture: Motia Integration
 ```mermaid
 flowchart LR
-    MO["Motia Orchestrator"]
-    subgraph Service_Step [Spatial Service]
-        PostGIS["Spatial SQL Logic"]
-        Analyse["Geometric Analytics"]
+    MO(["Core_Step Orchestrator"])
+    subgraph Service_Stage [Service_Step]
+        PostGIS[("PostgreSQL SQL Logic")]
+        Analyse(["Geometric Analytics"])
     end
-    Frappe["Registry Step (Frappe)"]
+    Frappe[("Registry_Step")]
 
     MO -->|"GeoJSON Context"| Analyse
     Analyse --> PostGIS
-    PostGIS -->|"ULPIN / Boundary"| Frappe
+    PostGIS -->|"ULPIN Mapping"| Frappe
 ```
 
 ## 4. Thinkable Mapping

@@ -1,31 +1,72 @@
 # OCR & Document Intelligence (Service Step)
 
+## 0. System Context (Meridian Architecture)
+```mermaid
+flowchart TD
+    %% -- User Layer --
+    User(["User / Device"])
+    Mobile(["Mobile App - Offline First"])
+    
+    %% -- Edge Layer --
+    subgraph Edge_Infrastructure [Edge Infrastructure]
+        Nginx["Nginx Reverse Proxy"]
+        Gateway["Rust Security Gateway"]
+    end
+
+    %% -- Application Layer --
+    subgraph App_Layer [Application Systems]
+        Frontend["React Frontend"]
+        Backend["FastAPI Backend"]
+        Frappe["Frappe ERPNext"]
+    end
+
+    %% -- Data Intelligence Layer --
+    subgraph Intelligence [Data Intelligence and Processing]
+        OCR_Worker["OCR Engine"]
+        Dedupe["Data Cleaning Service"]
+        Geo_Engine["Spatial Analysis"]
+    end
+
+    %% -- Persistence Layer --
+    subgraph Data_Layer [Persistence]
+        PSQL[("PostgreSQL and PostGIS")]
+        Redis[("Redis Cache")]
+        MinIO[("MinIO Object Storage")]
+        MariaDB[("MariaDB - Frappe")]
+    end
+
+    %% -- Flows --
+    User -->|"HTTPS"| Nginx
+    Mobile -->|"HTTPS"| Nginx
+
+    Nginx -->|"/"| Frontend
+    Nginx -->|"/api"| Gateway
+    Nginx -->|"/app"| Frappe
+
+    Gateway -->|"Auth and Rate Limit"| Backend
+    Gateway -->|"Proxy Legacy"| Frappe
+    
+    Backend -->|"Read and Write"| PSQL
+    Backend -->|"Cache"| Redis
+    Backend -->|"Store Files"| MinIO
+    
+    Frappe -->|"System Records"| MariaDB
+```
+
 ## 1. Role: The data-extractive "Service_Step"
-The **OCR Engine** is a specialized, stateless **Service Step** designed to convert unstructured land documents (PDFs/Images) into verified digital state. It is invoked purely as a functional runner by the **Motia Orchestrator**.
-
-*   **Primitive**: `Service_Step`
-*   **Input**: Document 1D + Binary Stream.
-*   **Logic**: Multilingual OCR (Urdu/English) + Entity Parsing.
-
-## 2. Functional Workflow
-The Step follows a strict logical pipeline to ensure "Thinkable" data extraction.
-
-### 2.1 Extraction Pipeline
-1.  **Image Prep**: Normalization and noise reduction.
-2.  **Multilingual Deciphering**: Concurrent processing for Urdu and English scripts.
-3.  **Schema Alignment**: Mapping text blocks to the `Land Parcel` or `ROR` schema using **Document 1D** as the anchor.
+OCR is a specialized **Service_Step** invoked by the `MotiaOrchestrator`.
 
 ## 3. Logical Architecture: Motia Integration
 ```mermaid
 flowchart LR
-    MO["Motia Orchestrator"]
-    subgraph Service_Step [OCR Service]
-        AI["AI / Tesseract Logic"]
-        Map["Field Mapping"]
+    MO(["Core_Step Orchestrator"])
+    subgraph Service_Stage [Service_Step]
+        AI(["AI Logic"])
+        Map(["Field Mapping"])
     end
-    Frappe["Registry Step (Frappe)"]
+    Frappe[("Registry_Step")]
 
-    MO -->|"Binary + Context"| AI
+    MO -->|"Binary Payload"| AI
     AI --> Map
     Map -->|"Structured JSON"| Frappe
 ```

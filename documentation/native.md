@@ -5,31 +5,31 @@
 flowchart TD
     %% -- User Layer --
     User(["User / Device"])
-    Mobile(["Mobile App (Offline First)"])
+    Mobile(["Mobile App - Offline First"])
     
     %% -- Edge Layer --
     subgraph Edge_Infrastructure [Edge Infrastructure]
-        Nginx["Nginx Reverse Proxy\n(Port 80/443)"]
-        Gateway["Rust Security Gateway\n(Port 8090)"]
+        Nginx["Nginx Reverse Proxy"]
+        Gateway["Rust Security Gateway"]
     end
 
     %% -- Application Layer --
     subgraph App_Layer [Application Systems]
-        Frontend["React Frontend\n(Static Serve)"]
-        Backend["FastAPI Backend\n(OCR / Spatial / Dedupe)"]
-        Frappe["Frappe / ERPNext\n(System of Record)"]
+        Frontend["React Frontend"]
+        Backend["FastAPI Backend"]
+        Frappe["Frappe ERPNext"]
     end
 
     %% -- Data Intelligence Layer --
-    subgraph Intelligence [Data Intelligence & Processing]
-        OCR_Worker["OCR Engine\n(Tesseract/EasyOCR)"]
-        Dedupe["Data Cleaning Service\n(Python Algorithm)"]
-        Geo_Engine["Spatial Analysis\n(PostGIS/Shapely)"]
+    subgraph Intelligence [Data Intelligence and Processing]
+        OCR_Worker["OCR Engine"]
+        Dedupe["Data Cleaning Service"]
+        Geo_Engine["Spatial Analysis"]
     end
 
     %% -- Persistence Layer --
     subgraph Data_Layer [Persistence]
-        PSQL[("PostgreSQL + PostGIS")]
+        PSQL[("PostgreSQL and PostGIS")]
         Redis[("Redis Cache")]
         MinIO[("MinIO Object Storage")]
         MariaDB[("MariaDB - Frappe")]
@@ -39,14 +39,14 @@ flowchart TD
     User -->|"HTTPS"| Nginx
     Mobile -->|"HTTPS"| Nginx
 
-    Nginx -->|"/ (Root)"| Frontend
+    Nginx -->|"/"| Frontend
     Nginx -->|"/api"| Gateway
     Nginx -->|"/app"| Frappe
 
-    Gateway -->|"Auth & Rate Limit"| Backend
+    Gateway -->|"Auth and Rate Limit"| Backend
     Gateway -->|"Proxy Legacy"| Frappe
     
-    Backend -->|"Read/Write"| PSQL
+    Backend -->|"Read and Write"| PSQL
     Backend -->|"Cache"| Redis
     Backend -->|"Store Files"| MinIO
     
@@ -71,12 +71,12 @@ Offline Data Collection (Field App) built with React Native (Expo).
 ## 2. Architecture: Offline-First Flow
 ```mermaid
 graph TD
-    UI[Dashboard] -->|Action| OCR[Camera/MLKit]
-    OCR -->|Extract| JSON[Local JSON]
-    JSON -->|Persist| SQLite[Local DB]
+    UI["Dashboard"] -->|"Action"| OCR["Camera/MLKit"]
+    OCR -->|"Extract"| JSON["Local JSON"]
+    JSON -->|"Persist"| SQLite["Local DB"]
     
-    SQLite -->|Background Job| SyncService
-    SyncService -->|Batch POST| Gateway[:8090]
+    SQLite -->|"Background Job"| SyncService
+    SyncService -->|"Batch POST"| Gateway
 ```
 
 ## 3. Logical Functions & Data

@@ -12,11 +12,14 @@ class RegistrySyncStep(Step):
         frappe_sync = FrappeSyncService()
         
         # Determine sync workflow based on doc_type
+        farmer_id = context.payload.get("farmer_id")
+        
         if context.doc_type.lower() in ["mutation", "registry", "transfer", "sale"]:
             result = frappe_sync.sync_transfer_to_frappe(
                 doc_id=context.document_1d,
                 fields=fields,
-                file_content=binary_data
+                file_content=binary_data,
+                provided_farmer_id=farmer_id
             )
         else:
             # Standard Review Routing for Girdawari/Jamabandi
@@ -27,7 +30,8 @@ class RegistrySyncStep(Step):
                 fields=fields,
                 field_confidences=ocr_result.get("field_confidences", {}),
                 overall_confidence=ocr_result.get("confidence", 0.0),
-                file_content=binary_data
+                file_content=binary_data,
+                provided_farmer_id=farmer_id
             )
             
         context.results["registry_sync"] = result

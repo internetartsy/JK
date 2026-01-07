@@ -13,47 +13,99 @@ A **Step** is the fundamental building block of our architecture. Each step enca
 *   **Functional**: Clear Input (Events/Requests) -> Deterministic Processing -> Output (State/Events).
 *   **Multi-Dev**: Allows Rust, Python, and Frappe logic to interact seamlessly within a single "Thinkable" flow.
 
-## 2. Multi-Dev Polyglot Runtime
-The system leverages a distributed polyglot model, synchronized via **Document 1D**.
+## 0. System Context (Meridian Architecture)
+```mermaid
+flowchart TD
+    %% -- User Layer --
+    User(["User and Device"])
+    Mobile(["Mobile App - Offline First"])
+    
+    %% -- Edge Layer --
+    subgraph Edge_Infrastructure [Edge Infrastructure]
+        Nginx["Nginx Reverse Proxy"]
+        Gateway["Rust Security Gateway"]
+    end
 
-| Runtime Layer | Language | Motia Step Role | Responsibility |
-| :--- | :--- | :--- | :--- |
-| **Rust Shield** | Rust | `Edge_Step` | JWT Validation, Rate Limiting, Request Interception |
-| **Orchestrator** | Python | `Core_Step` | Event Routing, State Flow, Domain Logic Execution |
-| **Frappe/ERP** | Python/JS | `Registry_Step` | System of Record, Persistence, UI Management |
-| **OCR/GIS** | Python | `Service_Step` | Heavy Computation, Data Extraction, Spatial Analytics |
+    %% -- Application Layer --
+    subgraph App_Layer [Application Systems]
+        Frontend["React Frontend"]
+        Backend["FastAPI Backend"]
+        Frappe["Frappe ERPNext"]
+    end
 
-## 3. Core Structural Flow
-The master flow revolves around the lifecycle of a **Document 1D**, orchestrated through sequential and concurrent Steps.
+    %% -- Data Intelligence Layer --
+    subgraph Intelligence [Data Intelligence and Processing]
+        OCR_Worker["OCR Engine"]
+        Dedupe["Data Cleaning Service"]
+        Geo_Engine["Spatial Analysis"]
+    end
+
+    %% -- Persistence Layer --
+    subgraph Data_Layer [Persistence]
+        PSQL["PostgreSQL and PostGIS"]
+        Redis["Redis Cache"]
+        MinIO["MinIO Object Storage"]
+        MariaDB["MariaDB - Frappe"]
+    end
+
+    %% -- Flows --
+    User -->|"HTTPS"| Nginx
+    Mobile -->|"HTTPS"| Nginx
+
+    Nginx -->|"Root"| Frontend
+    Nginx -->|"api"| Gateway
+    Nginx -->|"app"| Frappe
+
+    Gateway -->|"Auth and Rate Limit"| Backend
+    Gateway -->|"Proxy Legacy"| Frappe
+    
+    Backend -->|"Read and Write"| PSQL
+    Backend -->|"Cache"| Redis
+    Backend -->|"Store Files"| MinIO
+    
+    Frappe -->|"System Records"| MariaDB
+    
+    %% -- Logic Flows --
+    Backend -.->|"Async Task"| OCR_Worker
+    OCR_Worker -->|"Extract Text"| Backend
+    Backend -->|"Sync Result"| Frappe
+    
+    Frappe -.->|"Trigger"| Dedupe
+    Dedupe -->|"Find Clusters"| Frappe
+    
+    Mobile -->|"Sync Offline Data"| Backend
+```
+
+## 1. Motia Logical Flow
+The master flow revolves around the lifecycle of a **Document 1D**, orchestrated through sequential Step transitions across the layers defined above.
 
 ```mermaid
 flowchart TD
-    subgraph Edge_Infrastructure [Edge Layer: Rust]
-        RS["Rust Security Step (Auth/Sign)"]
+    subgraph Edge_Stage [Edge_Step]
+        RS["Rust Security Step"]
     end
 
-    subgraph Registry_Layer [Registry: Frappe]
-        FR["Frappe Registry Step (SOR)"]
+    subgraph Registry_Stage [Registry_Step]
+        FR["Frappe Registry SOR"]
     end
 
-    subgraph Orchestration_Layer [Orchestration: Motia]
-        MO["Motia Core Step (Domain Rules)"]
+    subgraph Orchestration_Stage [Core_Step]
+        MO["MotiaOrchestrator"]
     end
 
-    subgraph Execution_Layer [Service Runners]
+    subgraph Execution_Stage [Service_Step]
         OS["OCRStep"]
         ES["ExtractionStep"]
         SS["SpatialGeoStep"]
     end
 
     %% -- Logical Flow --
-    RS -->|"Validated Call"| FR
+    RS -->|"Secured Request"| FR
     FR -->|"Domain Event - Doc1D"| MO
-    MO -->|"StorageStep"| OS
-    MO -->|"OCRStep"| OS
-    MO -->|"ExtractionStep"| ES
-    OS -->|"Result Update"| FR
-    ES -->|"Result Update"| FR
+    MO -->|"Execute Step"| OS
+    MO -->|"Execute Step"| ES
+    OS -->|"Reconcile"| FR
+    ES -->|"Reconcile"| FR
 ```
 
 ## 4. Logical Workflow Specifications
