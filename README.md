@@ -110,8 +110,9 @@ JK/
 ├── frappe-bench/           # ERPNext & Custom Apps
 ├── docker-compose.yml      # Orchestration
 └── documentation/          # Detailed Architecture Docs
-    ├── Architecture_Stack/ # Core System Designs (V2)
-    └── System_Status/      # Operational Reports
+    ├── ADMD.md             # Core Design & Philosophy
+    ├── FULL_DOCUMENTATION_ARCHIVE.md # Consolidated Master Doc
+    └── *.md                # Specialized Module Docs
 ```
 
 ## 📚 Documentation (V2 Standards)

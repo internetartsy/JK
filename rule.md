@@ -56,4 +56,12 @@ All backend development must adhere to the **Motia Unified Architecture**:
 
 ---
 
+## 📖 7. Authoritative Data Storyboard (.md Maintenance)
+All `.md` files must function as an active **Data Storyboard** that mirrors the codebase exactly.
+*   **Centralized Documentation**: All architectural and technical `.md` files must reside within the `documentation/` directory. No stray design docs are allowed in `backend/` or `mobile/` sub-folders.
+*   **Parity Requirement**: If a code change alters the "Data Narrative" (e.g., how a Document 1D flows from scanning to registry), the corresponding documentation must be updated in the same commit.
+*   **Versioned Truth**: Documents are not just archival; they are the authoritative specification. If the code and an `.md` file disagree, the system is considered "In Break" and must be aligned immediately.
+
+---
+
 **© 2026 JK Land Records Authority**

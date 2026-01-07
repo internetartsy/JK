@@ -1,21 +1,32 @@
+import time
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
-from app.api import ocr
-from app.api.v1 import persons, parcels, frappe_sync
+from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-import time
+
+# Core App Modules
+from app.api import ocr
+from app.api.v1 import (
+    persons, parcels, frappe_sync, sync, files, geo, 
+    reviews, webhooks, transfers, process_debt, 
+    disputes, spatial_analysis, aadhaar_ror, 
+    farmer_portal, farmer_registry
+)
 from app.core.metrics import (
     http_requests_total, 
     http_request_duration_seconds,
     active_requests,
     app_info
 )
+from app.core.security.audit import log_security_event
 
 app = FastAPI(
-    title="Land Records OCR API"
+    title="AgriStack Verified Backend",
+    description="Stateless Motia/Thinkable Orchestration for Land Records",
+    version="2.0.0"
 )
 
-# Set app info
+# 1. System Metadata Initialization
 app_info.info({
     "version": "2.0.0",
     "environment": "development",
@@ -24,15 +35,13 @@ app_info.info({
     "primitive": "thinkable-step"
 })
 
-from fastapi.middleware.cors import CORSMiddleware
-
-# Configure CORS
+# 2. CORS Configuration
 origins = [
     "http://localhost:3000",  # React PWA
-    "http://localhost:8081",  # React Native Metro Bundler
+    "http://localhost:8081",  # React Native Metro
     "http://localhost:8000",  # Swagger UI
-    "http://localhost:8080",  # React Native Web (Custom Port)
-    "*", # Allow all for development, restrict in production
+    "http://localhost:8080",  # React Native Web
+    "*",                      # Allow all for development
 ]
 
 app.add_middleware(
@@ -43,41 +52,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Prometheus metrics middleware
+# 3. Security & Telemetry Middleware
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
-    # Skip metrics endpoint itself
     if request.url.path == "/metrics":
         return await call_next(request)
     
     active_requests.inc()
     start_time = time.time()
-
-    # Security Audit Logging
-    from app.core.security.audit import log_security_event
     
-    # Extract User ID if authenticated (mock logic for now as auth is handled by Keycloak/Gateway)
-    # in real flow, we would parse the JWT token from Authorization header here or trust the gateway's X-User-Id
     user_id = request.headers.get("X-User-Id", "anonymous")
     client_ip = request.client.host if request.client else "unknown"
     
-    # Log sensitive actions (POST/PUT/DELETE)
+    # Audit log for state-changing requests
     if request.method in ["POST", "PUT", "DELETE", "PATCH"]:
         log_security_event(
-            event_type=f"API_REQUEST_STARTED",
+            event_type="API_REQUEST_STARTED",
             user_id=user_id,
             ip_address=client_ip,
-            details={
-                "method": request.method,
-                "path": request.url.path
-            }
+            details={"method": request.method, "path": request.url.path}
         )
 
     try:
         response = await call_next(request)
         duration = time.time() - start_time
         
-        # Record metrics
         http_requests_total.labels(
             method=request.method,
             endpoint=request.url.path,
@@ -89,10 +88,9 @@ async def metrics_middleware(request: Request, call_next):
             endpoint=request.url.path
         ).observe(duration)
         
-        # Log failures for security monitoring
         if response.status_code >= 400:
              log_security_event(
-                event_type=f"API_REQUEST_FAILED",
+                event_type="API_REQUEST_FAILED",
                 user_id=user_id,
                 ip_address=client_ip,
                 details={
@@ -102,61 +100,38 @@ async def metrics_middleware(request: Request, call_next):
                     "duration_ms": round(duration * 1000, 2)
                 }
             )
-        
         return response
     finally:
         active_requests.dec()
 
-app.include_router(ocr.router, prefix="/api/v1")
-app.include_router(persons.router, prefix="/api/v1")
-app.include_router(parcels.router, prefix="/api/v1")
-app.include_router(frappe_sync.router, prefix="/api/v1")
-from app.api.v1 import sync
-app.include_router(sync.router, prefix="/api/v1")
-from app.api.v1 import files
-app.include_router(files.router, prefix="/api/v1")
-from app.api.v1 import geo
-app.include_router(geo.router, prefix="/api/v1")
-from app.api.v1 import reviews
-app.include_router(reviews.router, prefix="/api/v1/reviews", tags=["reviews"])
-from app.api.v1 import webhooks
-app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["webhooks"])
+# 4. Route Registration
+# Core AgriStack API (v1)
+app.include_router(ocr.router, prefix="/api/v1", tags=["OCR"])
+app.include_router(persons.router, prefix="/api/v1", tags=["Registry"])
+app.include_router(parcels.router, prefix="/api/v1", tags=["Registry"])
+app.include_router(frappe_sync.router, prefix="/api/v1", tags=["Sync"])
+app.include_router(sync.router, prefix="/api/v1", tags=["Sync"])
+app.include_router(files.router, prefix="/api/v1", tags=["Storage"])
+app.include_router(geo.router, prefix="/api/v1", tags=["GIS"])
+app.include_router(reviews.router, prefix="/api/v1/reviews", tags=["Governance"])
+app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Integration"])
+app.include_router(transfers.router, prefix="/api/v1", tags=["Workflow"])
+app.include_router(process_debt.router, prefix="/api/v1", tags=["Workflow"])
+app.include_router(disputes.router, prefix="/api/v1", tags=["Workflow"])
+app.include_router(spatial_analysis.router, prefix="/api/v1", tags=["GIS"])
+app.include_router(aadhaar_ror.router, prefix="/api/v1", tags=["KYC"])
+app.include_router(farmer_portal.router, prefix="/api/v1", tags=["Portal"])
+app.include_router(farmer_registry.router, prefix="/api/v1", tags=["Registry"])
 
+# 5. Health & Monitoring
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the Land Records OCR System"}
+    return {"message": "Welcome to the AgriStack Verified Backend"}
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "timestamp": time.time()}
 
 @app.get("/metrics")
 def metrics():
-    """Prometheus metrics endpoint"""
-    return Response(
-        content=generate_latest(),
-        media_type=CONTENT_TYPE_LATEST
-    )
-
-from app.api.v1 import transfers
-app.include_router(transfers.router, prefix="/api/v1")
-
-from app.api.v1 import process_debt
-app.include_router(process_debt.router, prefix="/api/v1")
-
-from app.api.v1 import disputes
-app.include_router(disputes.router, prefix="/api/v1")
-
-from app.api.v1 import spatial_analysis
-app.include_router(spatial_analysis.router, prefix="/api/v1")
-
-# Register missing routers
-from app.api.v1 import aadhaar_ror
-app.include_router(aadhaar_ror.router, prefix="/api/v1")
-
-from app.api.v1 import farmer_portal
-app.include_router(farmer_portal.router, prefix="/api/v1")
-
-from app.api.v1 import farmer_registry
-app.include_router(farmer_registry.router, prefix="/api/v1")
-
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)

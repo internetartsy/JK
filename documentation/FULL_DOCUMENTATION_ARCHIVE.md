@@ -48,54 +48,16 @@ flowchart TD
     Nginx -->|"/app"| Frappe
 
     Gateway -->|"Auth and Rate Limit"| Backend
-    Gateway -->|"Proxy Legacy"| Frappe
-    
-    Backend -->|"Read and Write"| PSQL
-    Backend -->|"Cache"| Redis
-    Backend -->|"Store Files"| MinIO
-    
-    Frappe -->|"System Records"| MariaDB
+    Backend -->|"Job Queue"| Redis
+    Backend -->|"Object Store"| MinIO
+    Backend -->|"Spatial Queries"| PSQL
+    Backend -->|"Registry Sync"| Frappe
 ```
 
-## 1. Motia Unified Lifecycle
-Logic is abstracted into **Motia Steps** that transition across the Meridian layers.
+---
 
-```mermaid
-flowchart TD
-    %% -- Edge Gateway --
-    subgraph Edge_Step [Security Edge]
-        Auth(["JWT Verification"])
-    end
-
-    %% -- Registry SOR --
-    subgraph Registry_Step [System of Record]
-        SOR[("Frappe Registry")]
-        Event["Domain Event Emitter"]
-    end
-
-    %% -- Logic Orchestration --
-    subgraph Logic_Step [Orchestration]
-        Flow["MotiaOrchestrator"]
-    end
-
-    %% -- Functional Execution --
-    subgraph Service_Step [Workload Runners]
-        OCR["OCR (Extract text)"]
-        KYC["KYC (Identity Link)"]
-        GIS["GIS (Spatial ULPIN)"]
-    end
-
-    %% -- Flows --
-    Auth --> SOR
-    SOR -->|"Doc1D Event"| Flow
-    Flow --> OCR
-    Flow --> KYC
-    Flow --> GIS
-    OCR -->|"Result"| Flow
-    KYC -->|"Result"| Flow
-    GIS -->|"Result"| Flow
-    Flow -->|"Consolidated Result"| SOR
-```
+## 🏗️ 1. Motia-Unified Architecture
+The system follows the **Motia Design Philosophy**: every action is a "Step," every process is an "Orchestration," and every document has a unique "1D" (Document 1D).
 
 ### 1.1 The Lifecycle of a "Document 1D"
 The **Document 1D** is the central "Thinkable" object. Its journey defines the platform's execution:
@@ -133,18 +95,6 @@ The **Document 1D** is the central "Thinkable" object. Its journey defines the p
 
 ---
 
-## ✅ System Integrity Status (Jan 7, 2026)
-
-*   **Architecture Model**: ADMD v3.0 (Industrial AgriStack Edition).
-*   **Logical Traceability**: Document 1D consistency established across Rust/Python/Frappe.
-*   **Functional Alignment**: All services refactored as stateless Steps.
-*   **Surgical GIS**: Context-aware map visualization implemented.
-*   **Operational Bridge**: Secure Registry Master link (Port 8090) established.
-*   **Manual Entry Replacement**: OCR + KYC + GIS pipeline fully implemented in `tasks.py`.
-*   **Thinkable UX**: Lifecycle-based documentation for multi-dev clarity.
- 
----
-
 ## 🛡️ 4. Security & Git Ignore Policy
 The following sensitive data is strictly excluded from version control for security compliance:
 
@@ -155,6 +105,19 @@ The following sensitive data is strictly excluded from version control for secur
 | **Local Config** | `site_config.json` | Instance-specific Frappe configurations. |
 | **Data Dumps** | `*.sql`, `*.csv` | Databases and record exports. |
 | **Snapshots** | `*.png`, `*.webp` | UI debug snapshots and traces. |
+
+---
+
+## 📚 5. Detailed Module Documentation
+For deep dives into specific system components, refer to the following specialized documents:
+
+*   [**Frontend Architecture**](./frontend.md) - React Web Dashboard & State Logic.
+*   [**Native Mobile Architecture**](./native.md) - Offline-First Sync, Biometrics & OCR.
+*   [**Rust Gateway**](./rust_gateway.md) - Security Edge Step, JWT & Audit Specs.
+*   [**Frappe Integration**](./frappe_integration.md) - System of Record, Doctype Schemas & Webhooks.
+*   [**Spatial & Geo Intelligence**](./spatial_geo.md) - PostGIS, ULPIN Generation & Map Visualization.
+*   [**OCR AI Pipeline**](./ocr_geo.md) - Motia-based ML Extraction Workflow.
+*   [**KYC Workflow**](./kyc_workflow.md) - Identity Resolution & Verification Flow.
 
 ---
 
