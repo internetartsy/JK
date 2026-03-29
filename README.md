@@ -10,6 +10,16 @@ This repository contains the complete source code for the JK Land Records System
 
 ---
 
+## 🖥️ System Interfaces (Frontend)
+
+### Dashboard & Analytics
+![Dashboard](./assets/dashboard.png)
+
+### Review Queue (Governance)
+![Review Queue](./assets/review_queue.png)
+
+---
+
 ## 🏗️ Architecture Overview
 
 The system allows **Field Operators** to collect land data offline (Mobile), **Verifiers** to review submissions (Web), and **Administrators** to manage the legal registry (ERPNext).
@@ -20,6 +30,19 @@ The system allows **Field Operators** to collect land data offline (Mobile), **V
 4.  **Backend (FastAPI)**: Core business logic, Geospatial analysis (PostGIS), and Sync orchestration.
 5.  **ERP (Frappe/ERPNext)**: The legal System of Record (RoR, JAMABANDI).
 
+
+---
+
+## 🌍 Map & Registry Views
+
+### Land Registry Data
+![Land Registry](./assets/land_registry.png)
+
+### Spatial Map Intelligence
+![Map View](./assets/map_view.png)
+
+### Data Cleaning Operations
+![Data Cleaning](./assets/data_cleaning.png)
 
 ---
 
